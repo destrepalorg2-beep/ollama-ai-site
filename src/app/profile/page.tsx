@@ -11,18 +11,15 @@ import { Separator, Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/v
 import { PaymentDialog } from "@/components/ui/payment-dialog";
 import { displayName, initials, isOfflineSession, signOut, useAuth } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
+import { CONTENT } from "@/lib/content";
 
-const PLANS: Record<string, { name: string; price: string; credits: string }> = {
-  free: { name: "Free", price: "0 ₽", credits: "1 000 кредитов / мес" },
-  pro: { name: "Pro", price: "490 ₽ / мес", credits: "5 000 кредитов / мес" },
-  ultra: { name: "Ultra", price: "1 490 ₽ / мес", credits: "15 000 кредитов / мес" },
-};
-
-const BUILDS = [
-  { icon: Monitor, os: "Windows", req: "Windows 10 или новее, 64-bit", file: "AI-Hub-Setup.exe" },
-  { icon: Apple, os: "macOS", req: "macOS 12 или новее, Intel и Apple Silicon", file: "AI-Hub.dmg" },
-  { icon: Terminal, os: "Linux", req: "Ubuntu 22.04+, Fedora 38+, Arch", file: "AI-Hub.AppImage" },
-];
+/* Monthly price in rubles per plan — the only bit that isn't translated
+   text, so it stays out of content.ts. Everything else (plan name, credits
+   line, OS requirements) is read from CONTENT so it follows the language
+   switcher instead of duplicating a hardcoded Russian copy here. */
+const MONTHLY_RUB: Record<string, number> = { free: 0, pro: 490, ultra: 1490 };
+const BUILD_ICONS = [Monitor, Apple, Terminal];
+const BUILD_FILES = ["AI-Hub-Setup.exe", "AI-Hub.dmg", "AI-Hub.AppImage"];
 
 const Field = ({ label, value }: { label: string; value: string }) => (
   <div>
@@ -34,7 +31,7 @@ const Field = ({ label, value }: { label: string; value: string }) => (
 export default function ProfilePage() {
   const router = useRouter();
   const { account, ready } = useAuth();
-  const { t } = useT();
+  const { t, lang } = useT();
   const [tab, setTab] = useState("profile");
   const [payOpen, setPayOpen] = useState(false);
   const [build, setBuild] = useState<string | null>(null);
@@ -60,6 +57,23 @@ export default function ProfilePage() {
   }
 
   const name = displayName(account);
+  const perMonth = CONTENT[lang].landing.perMonth;
+  const PLANS: Record<string, { name: string; price: string; credits: string }> = Object.fromEntries(
+    CONTENT[lang].plans.map((p) => [
+      p.id,
+      {
+        name: p.name,
+        price: MONTHLY_RUB[p.id] === 0 ? "0 ₽" : `${MONTHLY_RUB[p.id].toLocaleString("ru-RU")} ₽ ${perMonth}`,
+        credits: p.feats[0],
+      },
+    ]),
+  );
+  const BUILDS = CONTENT[lang].download.builds.map((b, i) => ({
+    icon: BUILD_ICONS[i],
+    os: b.os,
+    req: b.req,
+    file: BUILD_FILES[i],
+  }));
   const plan = account.plan ? PLANS[account.plan] : null;
 
   return (
