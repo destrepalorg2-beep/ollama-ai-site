@@ -20,7 +20,7 @@ export default function ContactsPage() {
 
   const channels = [
     { icon: Mail, label: c.mail, value: "support@aihub.local", href: "mailto:support@aihub.local" },
-    { icon: MessageCircle, label: c.telegram, value: "@aihub_support", href: "https://t.me/aihub_support" },
+    { icon: MessageCircle, label: c.telegram, value: "@hub_AIsupport", href: "https://t.me/hub_AIsupport" },
   ];
 
   const submit = async (e: React.FormEvent) => {

@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { t } = useT();
   const [plan, setPlan] = useState<string | null>(null);
+  const [emailFromLink, setEmailFromLink] = useState<string | undefined>(undefined);
   const [nickname, setNickname] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +30,11 @@ export default function RegisterPage() {
   // boundary around this page and fails the build without one.
   useEffect(() => {
     try {
-      const p = new URLSearchParams(window.location.search).get("plan");
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get("plan");
       if (p && PLANS[p]) setPlan(p);
+      const e = params.get("email");
+      if (e) setEmailFromLink(e);
     } catch {}
   }, []);
 
@@ -106,6 +110,7 @@ export default function RegisterPage() {
           busy={busy}
           error={error}
           notice={notice}
+          defaultEmail={emailFromLink}
           onEmailSubmit={submit}
           onSocialSignIn={social}
           onEmailLink={() => setNotice("Заполните форму — вход по ссылке появится позже.")}

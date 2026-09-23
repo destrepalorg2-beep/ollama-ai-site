@@ -14,10 +14,12 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noAccountEmail, setNoAccountEmail] = useState<string | null>(null);
 
   const submit = async ({ email, password }: { email: string; password: string }) => {
     setError(null);
     setNotice(null);
+    setNoAccountEmail(null);
     setBusy(true);
     try {
       const res = await fetch(`${API_BASE}/api/auth/login`, {
@@ -36,6 +38,13 @@ export default function LoginPage() {
         // Server wants an emailed code instead of returning a token outright.
         setPending({ email });
         router.push("/verify");
+        return;
+      }
+      if (data.code === "account_not_found") {
+        // Point new visitors at registration instead of a flat "wrong
+        // password" — trades a little account-enumeration exposure for a
+        // much clearer first-time experience (see auth.routes.ts).
+        setNoAccountEmail(email);
         return;
       }
       setError(res.status === 401 ? "Неверный email или пароль." : data.error || "Не удалось войти.");
@@ -72,16 +81,31 @@ export default function LoginPage() {
       </header>
 
       <main className="flex flex-1 items-center justify-center p-6">
-        <AuthForm
-          mode="signin"
-          busy={busy}
-          error={error}
-          notice={notice}
-          onEmailSubmit={submit}
-          onSocialSignIn={social}
-          onEmailLink={emailLink}
-          onForgot={() => setNotice("Напишите в поддержку на странице «Контакты» — поможем восстановить доступ.")}
-        />
+        <div className="w-full max-w-sm space-y-3">
+          {noAccountEmail && (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm">
+              <p className="text-white/80">
+                Аккаунта с email <span className="font-medium text-white">{noAccountEmail}</span> ещё нет.
+              </p>
+              <Link
+                href={`/register?email=${encodeURIComponent(noAccountEmail)}`}
+                className="mt-2 inline-block font-medium text-foreground underline underline-offset-4"
+              >
+                Зарегистрироваться →
+              </Link>
+            </div>
+          )}
+          <AuthForm
+            mode="signin"
+            busy={busy}
+            error={error}
+            notice={notice}
+            onEmailSubmit={submit}
+            onSocialSignIn={social}
+            onEmailLink={emailLink}
+            onForgot={() => setNotice("Напишите в поддержку на странице «Контакты» — поможем восстановить доступ.")}
+          />
+        </div>
       </main>
     </div>
   );

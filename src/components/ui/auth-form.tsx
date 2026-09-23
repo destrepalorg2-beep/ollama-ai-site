@@ -51,6 +51,8 @@ interface AuthFormProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSu
   notice?: string | null;
   /** Extra field shown only on registration (nickname), rendered above email. */
   extraTop?: React.ReactNode;
+  /** Pre-fills the email field, e.g. when arriving from "no account yet, register" on the login page. */
+  defaultEmail?: string;
   onEmailSubmit?: (data: { email: string; password: string }) => void;
   onSocialSignIn?: (provider: Provider) => void;
   onEmailLink?: () => void;
@@ -64,6 +66,7 @@ export function AuthForm({
   error,
   notice,
   extraTop,
+  defaultEmail,
   onEmailSubmit,
   onSocialSignIn,
   onEmailLink,
@@ -140,7 +143,7 @@ export function AuthForm({
               <Label htmlFor="email">{t("auth.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="email" name="email" type="email" autoComplete="username" placeholder="you@example.com" className="pl-9" required />
+                <Input id="email" name="email" type="email" autoComplete="username" placeholder="you@example.com" defaultValue={defaultEmail} className="pl-9" required />
               </div>
             </div>
 
