@@ -31,7 +31,7 @@ export default function ContactsPage() {
     }
     setStatus({ kind: "sending" });
     try {
-      const res = await fetch("http://localhost:3000/api/requests", {
+      const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, contact, description: text, type: "contact" }),
