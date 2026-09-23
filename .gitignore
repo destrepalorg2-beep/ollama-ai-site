@@ -1,0 +1,18 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next
+/out
+next-env.d.ts
+
+# secrets — .env.local holds the Telegram bot token and must never be committed
+.env
+.env.*
+!.env.example
+
+# build / misc
+/build
+*.tsbuildinfo
+.DS_Store
+*.log
