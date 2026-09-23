@@ -3,7 +3,11 @@
 import { useCallback, useSyncExternalStore } from "react";
 import * as db from "@/lib/db";
 
-export const API_BASE = "http://localhost:3000";
+// Same-origin: register/login/profile are now handled by this site's own
+// API routes (backed by a shared cloud database), not by the visitor's own
+// local ai hub server. Only the chat/session features still need
+// localhost:3000 — those call it directly, they don't go through API_BASE.
+export const API_BASE = "";
 
 export type Account = {
   token: string;

@@ -1,0 +1,35 @@
+/**
+ * Server-side database access (Node runtime only — never import this from a
+ * "use client" file). Backed by a hosted Postgres instance (Vercel Postgres /
+ * Neon) so accounts work for every visitor, not just the one running the
+ * desktop app's local server on localhost:3000.
+ *
+ * Connection string comes from the POSTGRES_URL env var. Vercel injects it
+ * automatically once a Postgres database is attached to the project; for
+ * local `next dev` you copy the same value into .env.local.
+ */
+
+import { sql } from "@vercel/postgres";
+
+let schemaReady: Promise<void> | null = null;
+
+/** Creates the users table on first use. Cheap to call repeatedly — the
+ *  promise is cached so it only actually runs once per server instance. */
+export function ensureSchema(): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        nickname TEXT NOT NULL,
+        plan TEXT NOT NULL DEFAULT 'free',
+        avatar TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `.then(() => undefined);
+  }
+  return schemaReady;
+}
+
+export { sql };
