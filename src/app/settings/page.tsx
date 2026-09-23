@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ type: "nickname" | "email" | "password" | "server" | null; data: any } | null>(null);
+  const [modal, setModal] = useState<{ type: "avatar" | "nickname" | "email" | "password" | "server" | null; data: any } | null>(null);
   const [toast, setToast] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const authToken = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
 
