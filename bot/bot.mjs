@@ -233,14 +233,49 @@ const plansKb = kb([
 
 const awaitingReceipt = new Set();
 
-async function sendInvoice(chat_id, planId) {
+/* ── linking a Stars payment back to a site account ──────────────────────────
+   The site mints a short one-time token (POST /api/payment/intent) before
+   sending someone here, tied to their account + the plan they picked. That
+   token rides through the invoice payload — Telegram echoes it back in
+   successful_payment — so redeemPayment() below can tell the site exactly
+   whose plan to flip. No token (bot opened directly, not from the site) —
+   payment still works, it just isn't linked to any account, same as before
+   this existed; the owner sees it in the notification and sets it by hand. */
+const SITE_URL = (process.env.SITE_URL?.trim() || "https://ollama-ai-site.vercel.app").replace(/\/$/, "");
+const PAYMENT_ADMIN_TOKEN = process.env.PAYMENT_ADMIN_TOKEN?.trim();
+
+async function redeemPayment(token, planId) {
+  if (!PAYMENT_ADMIN_TOKEN) {
+    log("  PAYMENT_ADMIN_TOKEN не задан в .env.local — тариф на сайте не обновлён автоматически.");
+    return { ok: false };
+  }
+  try {
+    const res = await fetch(`${SITE_URL}/api/admin/redeem-payment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${PAYMENT_ADMIN_TOKEN}` },
+      body: JSON.stringify({ token, plan: planId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      log(`  redeem-payment (${token}): ${data.error ?? res.status}`);
+      return { ok: false };
+    }
+    return { ok: true, email: data.email };
+  } catch (e) {
+    log("  redeem-payment failed: " + (e.message ?? e));
+    return { ok: false };
+  }
+}
+
+async function sendInvoice(chat_id, planId, intentToken) {
   const plan = PLANS[planId];
   if (!plan) return send(chat_id, "Такого тарифа нет.");
+  const payload = intentToken ? `site_${planId}_${intentToken}` : `plan_${planId}_${Date.now()}`;
   return call("sendInvoice", {
     chat_id,
     title: `AI HUB — ${plan.title}`,
     description: plan.desc,
-    payload: `plan_${planId}_${Date.now()}`,
+    payload,
     // Stars invoices take an empty provider_token and the XTR currency.
     provider_token: "",
     currency: "XTR",
@@ -322,12 +357,41 @@ async function onMessage(msg) {
 
   if (msg.successful_payment) {
     const sp = msg.successful_payment;
-    await send(chat, "✅ Оплата прошла. Тариф подключим в ближайшее время — спасибо!");
+    const payload = sp.invoice_payload || "";
+
+    // Pull plan + site token back out of whichever payload shape sendInvoice
+    // used ("site_<plan>_<token>" when linked to an account, "plan_<plan>_<ts>"
+    // when opened anonymously straight in the bot).
+    let planId = null;
+    let intentToken = null;
+    if (payload.startsWith("site_")) {
+      const rest = payload.slice(5);
+      const cut = rest.indexOf("_");
+      planId = cut === -1 ? rest : rest.slice(0, cut);
+      intentToken = cut === -1 ? null : rest.slice(cut + 1);
+    } else if (payload.startsWith("plan_")) {
+      planId = payload.slice(5).split("_")[0];
+    }
+
+    const redeemed = intentToken ? await redeemPayment(intentToken, planId) : { ok: false };
+
+    await send(
+      chat,
+      redeemed.ok
+        ? "✅ Оплата прошла, тариф уже подключён на сайте — можно пользоваться!"
+        : "✅ Оплата прошла. Тариф подключим в ближайшее время — спасибо!",
+    );
     if (OWNER) {
       await send(
         OWNER,
-        `💫 <b>Оплата звёздами</b>\n${sp.total_amount} ⭐\nПлатёж: <code>${sp.telegram_payment_charge_id}</code>\n` +
-          `От: ${msg.from.first_name ?? ""} @${msg.from.username ?? "—"} (<code>${msg.from.id}</code>)`,
+        `💫 <b>Оплата звёздами</b>${planId ? ` — ${planId}` : ""}\n${sp.total_amount} ⭐\n` +
+          `Платёж: <code>${sp.telegram_payment_charge_id}</code>\n` +
+          `От: ${msg.from.first_name ?? ""} @${msg.from.username ?? "—"} (<code>${msg.from.id}</code>)\n` +
+          (intentToken
+            ? redeemed.ok
+              ? `Тариф на сайте обновлён автоматически (${redeemed.email}).`
+              : "⚠️ Не удалось обновить тариф на сайте автоматически — подключите вручную."
+            : "Без привязки к аккаунту — подключите тариф вручную."),
       );
     }
     return;
@@ -356,8 +420,11 @@ async function onMessage(msg) {
   if (text.startsWith("/start")) {
     const payload = text.split(" ")[1] ?? "";
     if (payload.startsWith("stars_")) {
-      const id = payload.slice(6);
-      if (PLANS[id]) return sendInvoice(chat, id);
+      const rest = payload.slice(6); // "pro" or "pro_<intentToken>"
+      const cut = rest.indexOf("_");
+      const id = cut === -1 ? rest : rest.slice(0, cut);
+      const intentToken = cut === -1 ? undefined : rest.slice(cut + 1);
+      if (PLANS[id]) return sendInvoice(chat, id, intentToken);
       return send(chat, "Выберите тариф:", plansKb);
     }
     if (payload.startsWith("receipt")) {

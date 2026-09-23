@@ -20,5 +20,13 @@ export function botLink(start?: string) {
 /** Bot opens straight on the receipt flow for the given plan. */
 export const receiptLink = (plan?: string) => botLink(plan ? `receipt_${plan}` : "receipt");
 
-/** Bot opens straight on the Telegram Stars invoice for the given plan. */
-export const starsLink = (plan?: string) => botLink(plan ? `stars_${plan}` : "stars");
+/**
+ * Bot opens straight on the Telegram Stars invoice for the given plan.
+ * `intentToken` is the one-time token from /api/payment/intent — when
+ * present, the bot can auto-upgrade this account's plan the instant the
+ * Stars payment succeeds. Without it (not signed in, or the token request
+ * failed) the flow still works, it just isn't linked to an account and the
+ * plan gets set by hand, same as before this existed.
+ */
+export const starsLink = (plan?: string, intentToken?: string) =>
+  botLink(plan ? `stars_${plan}${intentToken ? `_${intentToken}` : ""}` : "stars");

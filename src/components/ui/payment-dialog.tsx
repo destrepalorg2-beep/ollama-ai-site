@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Send, Star } from "lucide-react";
 
 import { Dialog } from "@/components/ui/dialog";
 import { buttonVariants } from "@/components/ui/button";
+import { isOfflineSession, useAuth } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
 import { receiptLink, starsLink } from "@/lib/telegram";
@@ -28,7 +29,34 @@ export function PaymentDialog({
   plan?: string;
 }) {
   const { lang } = useT();
+  const { account } = useAuth();
   const c = CONTENT[lang].payment;
+
+  // When the visitor is signed in and a specific plan was picked, get a
+  // one-time token that links the Stars payment back to their account, so
+  // the bot can flip their plan the moment Telegram confirms the payment
+  // instead of waiting on a manual check. Silently falls back to the old,
+  // unlinked flow if this fails for any reason (not signed in, offline
+  // session, network hiccup) — nothing here blocks paying.
+  const [intentToken, setIntentToken] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    setIntentToken(undefined);
+    if (!open || !plan || !account || isOfflineSession(account)) return;
+    let cancelled = false;
+    fetch("/api/payment/intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${account.token}` },
+      body: JSON.stringify({ plan }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d?.token) setIntentToken(d.token);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, plan, account?.token]);
 
   return (
     <Dialog open={open} onClose={onClose} title={c.title}>
@@ -38,7 +66,7 @@ export function PaymentDialog({
         <div className="mb-2 text-[11px] uppercase tracking-widest text-white/40">{c.tgTitle}</div>
         <div className="grid gap-2 sm:grid-cols-2">
           <a
-            href={starsLink(plan)}
+            href={starsLink(plan, intentToken)}
             target="_blank"
             rel="noreferrer"
             className="rounded-xl border border-white/10 p-4 transition-colors hover:border-white/25"

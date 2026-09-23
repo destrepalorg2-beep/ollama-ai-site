@@ -43,6 +43,21 @@ export function ensureSchema(): Promise<void> {
           last_sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
+
+      // One-time tokens that link a Telegram Stars payment back to the site
+      // account that started it — see /api/payment/intent and
+      // /api/admin/redeem-payment. The token travels through Telegram's
+      // invoice payload instead of the email itself, so nothing PII-bearing
+      // sits in a deep link or a bot log.
+      await sql`
+        CREATE TABLE IF NOT EXISTS payment_intents (
+          token TEXT PRIMARY KEY,
+          email TEXT NOT NULL,
+          plan TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          consumed_at TIMESTAMPTZ
+        )
+      `;
     })();
   }
   return schemaReady;
