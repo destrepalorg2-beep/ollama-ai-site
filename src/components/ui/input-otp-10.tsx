@@ -41,8 +41,8 @@ function OtpSlot({ index, isSuccess }: { index: number; isSuccess: boolean }) {
         isSuccess
           ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
           : isActive
-            ? "border-[#7c3aed] bg-[#7c3aed]/10 text-white"
-            : "border-white/10 bg-white/[0.03] text-white/50 hover:border-white/20 hover:bg-white/[0.06]",
+            ? "border-white bg-white/10 text-white"
+            : "border-white/15 bg-white/[0.04] text-white/50 hover:border-white/25 hover:bg-white/[0.08]",
       )}
     >
       <AnimatePresence mode="popLayout">
@@ -63,7 +63,7 @@ function OtpSlot({ index, isSuccess }: { index: number; isSuccess: boolean }) {
         {pulseKey > 0 && (
           <motion.div
             key={pulseKey}
-            className="absolute inset-0 rounded-xl border border-[#7c3aed] pointer-events-none"
+            className="absolute inset-0 rounded-xl border border-white/70 pointer-events-none"
             initial={{ opacity: 0.8, scale: 0.9, filter: "blur(0px)" }}
             animate={{ opacity: 0, scale: 1.5, filter: "blur(2px)" }}
             exit={{ opacity: 0 }}
@@ -74,7 +74,7 @@ function OtpSlot({ index, isSuccess }: { index: number; isSuccess: boolean }) {
       {hasFakeCaret && !isSuccess && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <motion.div
-            className="bg-[#7c3aed] h-6 w-0.5"
+            className="bg-white h-6 w-0.5"
             animate={{ opacity: [1, 0, 1] }}
             transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
           />
@@ -110,16 +110,16 @@ export default function InputOtp10({
   successSubtitle = "Вход выполняется...",
 }: InputOtp10Props) {
   return (
-    <div className="relative w-full max-w-sm sm:max-w-md mx-auto rounded-2xl border border-white/10 bg-linear-to-b from-white/[0.05] to-white/[0.015] p-6 sm:p-8 backdrop-blur-xl overflow-hidden group select-none">
+    <div className="relative w-full max-w-sm sm:max-w-md mx-auto p-6 sm:p-8 overflow-hidden group select-none">
 
       <div className="flex flex-col items-center gap-6 sm:gap-7 relative">
         <div className="relative w-40 h-40 flex items-center justify-center">
           <div
-            className="absolute inset-0 rounded-full border border-dashed border-[#7c3aed]/30 animate-spin pointer-events-none"
+            className="absolute inset-0 rounded-full border border-dashed border-white/20 animate-spin pointer-events-none"
             style={{ animationDuration: "60s" }}
           />
           <div
-            className="absolute inset-2 rounded-full border border-[#7c3aed]/15 animate-spin pointer-events-none"
+            className="absolute inset-2 rounded-full border border-white/10 animate-spin pointer-events-none"
             style={{ animationDuration: "30s", animationDirection: "reverse" }}
           />
           <div className="absolute inset-4 rounded-full border border-dashed border-white/5 pointer-events-none" />
@@ -128,7 +128,7 @@ export default function InputOtp10({
               "absolute -inset-1.5 rounded-full transition-all duration-500",
               isSuccess
                 ? "bg-linear-to-t from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 animate-pulse"
-                : "bg-linear-to-t from-[#7c3aed]/0 via-[#7c3aed]/5 to-[#7c3aed]/0 animate-pulse",
+                : "bg-linear-to-t from-white/0 via-white/5 to-white/0 animate-pulse",
             )}
             style={!isSuccess ? { animationDuration: "3s" } : undefined}
           />

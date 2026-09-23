@@ -16,7 +16,7 @@ interface Vec3 {
 }
 
 const POINT_COUNT = 220;
-const COLORS = ["#5b21b6", "#7c3aed", "#a855f7", "#ddd6fe"];
+const COLORS = ["#64748b", "#94a3b8", "#cbd5e1", "#f8fafc"];
 
 function fibonacciSphere(count: number): Vec3[] {
   const points: Vec3[] = [];

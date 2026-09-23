@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import { completeSignIn, getPending } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import InputOtp10 from "@/components/ui/input-otp-10";
@@ -44,11 +45,16 @@ export default function VerifyPage() {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    // { once: true } is the fix for the black flicker: cloud-hosted video can
+    // refire "canplay" mid-playback (a brief rebuffer, or the loop restart),
+    // and re-running the fade snapped opacity back to 0 every time it did —
+    // a visible flash to black. Fading in once, on the very first frame, is
+    // all this needs; after that the video just keeps playing.
     const onCanPlay = () => {
       v.play().catch(() => {});
       fade(v, 0, 1, 900);
     };
-    v.addEventListener("canplay", onCanPlay);
+    v.addEventListener("canplay", onCanPlay, { once: true });
     return () => v.removeEventListener("canplay", onCanPlay);
   }, []);
 
@@ -69,7 +75,7 @@ export default function VerifyPage() {
 
       if (response.ok && data.token) {
         setIsSuccess(true);
-        setMessage({ text: "✅ Email подтверждён! Вход в систему...", type: "success" });
+        setMessage({ text: "Email подтверждён! Вход в систему...", type: "success" });
         completeSignIn(data.token, { email: email || undefined, nickname: data.nickname, plan: data.plan });
         setTimeout(() => {
           router.push("/profile");
@@ -105,7 +111,7 @@ export default function VerifyPage() {
       });
 
       if (response.ok) {
-        setMessage({ text: "✅ Новый код отправлен!", type: "success" });
+        setMessage({ text: "Новый код отправлен!", type: "success" });
       } else {
         const data = await response.json().catch(() => ({}));
         setMessage({
@@ -159,19 +165,24 @@ export default function VerifyPage() {
           <div className="text-center">
             <h1 className="mb-2 text-2xl font-bold text-white sm:text-3xl">Проверьте почту</h1>
             <p className="text-sm text-white/60">Мы отправили 6-значный код подтверждения на</p>
-            <p className="mt-2 inline-block break-all rounded-full border border-[#7c3aed]/40 bg-[#7c3aed]/15 px-4 py-1.5 text-sm text-[#c4b5fd]">
+            <p className="mt-2 inline-block break-all rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm">
               {email}
             </p>
           </div>
 
           {message && (
             <div
-              className={`w-full rounded-xl border p-3 text-center text-sm backdrop-blur-sm ${
+              className={`flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-center text-sm backdrop-blur-sm ${
                 message.type === "success"
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
                   : "border-red-500/30 bg-red-500/10 text-red-300"
               }`}
             >
+              {message.type === "success" ? (
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+              ) : (
+                <AlertCircle className="h-4 w-4 shrink-0" />
+              )}
               {message.text}
             </div>
           )}
@@ -193,7 +204,7 @@ export default function VerifyPage() {
             <button
               onClick={handleResend}
               disabled={resending || loading || isSuccess}
-              className="rounded-xl border border-white/15 px-6 py-3 text-sm text-white/70 backdrop-blur-sm transition-all hover:border-[#7c3aed]/60 hover:bg-[#7c3aed]/10 hover:text-white disabled:opacity-50"
+              className="rounded-xl border border-white/15 px-6 py-3 text-sm text-white/70 backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10 hover:text-white disabled:opacity-50"
             >
               {resending ? "Отправка..." : "Отправить повторно"}
             </button>
