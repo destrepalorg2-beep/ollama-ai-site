@@ -16,3 +16,5 @@ next-env.d.ts
 *.tsbuildinfo
 .DS_Store
 *.log
+test-output.txt
+build-output.txt
