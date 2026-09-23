@@ -1,69 +1,59 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { completeSignIn, getPending } from "@/lib/auth";
-import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { completeSignIn, getPending } from "@/lib/auth";
+import { useT } from "@/lib/i18n";
+import InputOtp10 from "@/components/ui/input-otp-10";
+
+/* Same hero video as the homepage — swap this constant for V_FEATURED /
+   V_PHIL / V_SVC1 / V_SVC2 (see src/app/page.tsx) if a different clip fits
+   better here. */
+const V_VERIFY_BG =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4";
+
+function fade(el: HTMLVideoElement, from: number, to: number, ms: number) {
+  const start = performance.now();
+  const step = (now: number) => {
+    const t = Math.min(1, (now - start) / ms);
+    el.style.opacity = String(from + (to - from) * t);
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 
 export default function VerifyPage() {
-  const [code, setCode] = useState<string[]>(new Array(6).fill(""));
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const router = useRouter();
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+  const { t } = useT();
+  const videoRef = useRef<HTMLVideoElement>(null);
   const email = typeof window !== "undefined" ? (getPending()?.email ?? null) : null;
 
   useEffect(() => {
     if (!email) {
       router.push("/register");
     }
-    if (inputsRef.current[0]) {
-      inputsRef.current[0].focus();
-    }
   }, [email, router]);
 
-  const handleInputChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onCanPlay = () => {
+      v.play().catch(() => {});
+      fade(v, 0, 1, 900);
+    };
+    v.addEventListener("canplay", onCanPlay);
+    return () => v.removeEventListener("canplay", onCanPlay);
+  }, []);
 
-    const newCode = [...code];
-    newCode[index] = value.slice(-1);
-    setCode(newCode);
-
-    if (value && index < 5) {
-      inputsRef.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      inputsRef.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const paste = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    const newCode = [...code];
-    paste.split("").forEach((char, i) => {
-      newCode[i] = char;
-    });
-    setCode(newCode);
-
-    const lastIdx = Math.min(paste.length, 5);
-    inputsRef.current[lastIdx]?.focus();
-
-    if (paste.length === 6) {
-      submitCode(paste);
-    }
-  };
-
-  const submitCode = async (codeStr?: string) => {
-    const finalCode = codeStr || code.join("");
-    if (finalCode.length !== 6) {
-      setMessage({ text: "Введите все 6 цифр", type: "error" });
-      return;
-    }
+  const submitCode = async (value: string) => {
+    if (value.length !== 6 || loading || isSuccess) return;
 
     setLoading(true);
     setMessage(null);
@@ -72,28 +62,29 @@ export default function VerifyPage() {
       const response = await fetch("/api/auth/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: finalCode }),
+        body: JSON.stringify({ email, code: value }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok && data.token) {
+        setIsSuccess(true);
         setMessage({ text: "✅ Email подтверждён! Вход в систему...", type: "success" });
         completeSignIn(data.token, { email: email || undefined, nickname: data.nickname, plan: data.plan });
         setTimeout(() => {
           router.push("/profile");
         }, 1000);
       } else {
-        if (response.status === 400) {
-          setMessage({ text: "Неверный код. Попробуйте ещё раз", type: "error" });
-        } else if (data.code === "EXPIRED") {
+        if (data.code === "EXPIRED") {
           setMessage({ text: "Код истёк. Запросите новый", type: "error" });
+        } else if (data.code === "TOO_MANY_ATTEMPTS") {
+          setMessage({ text: data.error || "Слишком много неверных попыток", type: "error" });
+        } else if (response.status === 400) {
+          setMessage({ text: "Неверный код. Попробуйте ещё раз", type: "error" });
         } else {
           setMessage({ text: data.error || "Ошибка проверки кода", type: "error" });
         }
-        // Clear inputs on error
-        setCode(new Array(6).fill(""));
-        inputsRef.current[0]?.focus();
+        setCode("");
       }
     } catch (error) {
       console.error("Verification error:", error);
@@ -104,7 +95,7 @@ export default function VerifyPage() {
   };
 
   const handleResend = async () => {
-    setLoading(true);
+    setResending(true);
     setMessage(null);
     try {
       const response = await fetch("/api/auth/send-verification", {
@@ -116,98 +107,100 @@ export default function VerifyPage() {
       if (response.ok) {
         setMessage({ text: "✅ Новый код отправлен!", type: "success" });
       } else {
-        const data = await response.json();
-        if (response.status === 429) {
-          setMessage({ text: "Слишком много попыток. Подождите 10 минут", type: "error" });
-        } else {
-          setMessage({ text: data.error || "Ошибка отправки", type: "error" });
-        }
+        const data = await response.json().catch(() => ({}));
+        setMessage({
+          text:
+            response.status === 429
+              ? "Слишком много попыток. Подождите 10 минут"
+              : data.error || "Ошибка отправки",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Resend error:", error);
       setMessage({ text: "Ошибка соединения", type: "error" });
     } finally {
-      setLoading(false);
+      setResending(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-[#1a1a2e] to-[#16213e]">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1f1f2f] rounded-[24px] p-8 sm:p-12 max-w-[440px] w-full shadow-2xl text-center"
-      >
-        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-[#7c3aed] to-[#a855f7] rounded-full flex items-center justify-center text-4xl">
-          ✉️
-        </div>
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#0b0b16]">
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        src={V_VERIFY_BG}
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ opacity: 0 }}
+      />
+      <div className="noise-overlay pointer-events-none absolute inset-0 opacity-[0.5] mix-blend-overlay" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-black/90" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(124,58,237,0.28),transparent_60%)]" />
 
-        <h1 className="text-white text-3xl font-bold mb-3">Проверьте почту</h1>
-        <p className="text-[#9ca3af] mb-8 text-sm leading-relaxed">
-          Мы отправили 6-значный код подтверждения на ваш email
-        </p>
+      <header className="relative z-10 flex items-center justify-between px-6 py-5">
+        <Link href="/" className="text-lg font-semibold text-white">
+          AI HUB
+        </Link>
+        <Link href="/" className="text-sm text-white/60 transition-colors hover:text-white">
+          {t("auth.home")}
+        </Link>
+      </header>
 
-        <div className="bg-[#7c3aed]/10 border border-[#7c3aed]/30 p-3 rounded-xl text-[#a78bfa] text-sm mb-8 word-break-all">
-          {email}
-        </div>
-
-        {message && (
-          <div className={`p-4 rounded-xl mb-6 text-sm ${
-            message.type === "success"
-              ? "bg-green-500/10 border border-green-500/30 text-green-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
-          }`}>
-            {message.text}
-          </div>
-        )}
-
-        <form onSubmit={(e) => { e.preventDefault(); submitCode(); }} className="space-y-8">
-          <div className="flex gap-3 justify-center">
-            {code.map((digit, idx) => (
-              <input
-                key={idx}
-                ref={(el) => { inputsRef.current[idx] = el; }}
-                type="text"
-                maxLength={1}
-                pattern="[0-9]"
-                inputMode="numeric"
-                value={digit}
-                onChange={(e) => handleInputChange(idx, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(idx, e)}
-                onPaste={handlePaste}
-                className="w-12 h-16 sm:w-14 sm:h-20 bg-[#2a2a3e] border-2 border-transparent rounded-xl text-white text-3xl font-bold text-center transition-all focus:outline-none focus:border-[#7c3aed] focus:bg-[#1f1f2f]"
-                required
-              />
-            ))}
+      <main className="relative z-10 flex flex-1 items-center justify-center px-5 pb-16 pt-2">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex w-full max-w-md flex-col items-center gap-5"
+        >
+          <div className="text-center">
+            <h1 className="mb-2 text-2xl font-bold text-white sm:text-3xl">Проверьте почту</h1>
+            <p className="text-sm text-white/60">Мы отправили 6-значный код подтверждения на</p>
+            <p className="mt-2 inline-block break-all rounded-full border border-[#7c3aed]/40 bg-[#7c3aed]/15 px-4 py-1.5 text-sm text-[#c4b5fd]">
+              {email}
+            </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full p-4 bg-gradient-to-br from-[#7c3aed] to-[#a855f7] text-white text-base font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(124,58,237,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Проверка...
-              </>
-            ) : (
-              "Подтвердить"
-            )}
-          </button>
-        </form>
+          {message && (
+            <div
+              className={`w-full rounded-xl border p-3 text-center text-sm backdrop-blur-sm ${
+                message.type === "success"
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                  : "border-red-500/30 bg-red-500/10 text-red-300"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
 
-        <div className="mt-8 text-center">
-          <p className="text-[#9ca3af] text-sm mb-3">Не получили код?</p>
-          <button
-            onClick={handleResend}
-            disabled={loading}
-            className="px-6 py-3 rounded-xl border border-[#3f3f5f] text-sm text-[#9ca3af] transition-all hover:bg-[#7c3aed]/10 hover:border-[#7c3aed] hover:text-white disabled:opacity-60"
-          >
-            {loading ? "Отправка..." : "Отправить повторно"}
-          </button>
-        </div>
-      </motion.div>
+          <InputOtp10
+            value={code}
+            onChange={setCode}
+            onComplete={submitCode}
+            isSuccess={isSuccess}
+            disabled={loading || isSuccess}
+            title={loading ? "Проверка..." : "Введите код"}
+            subtitle="6 цифр из письма — код действует 15 минут."
+            successTitle="Email подтверждён"
+            successSubtitle="Выполняется вход..."
+          />
+
+          <div className="text-center">
+            <p className="mb-3 text-sm text-white/50">Не получили код?</p>
+            <button
+              onClick={handleResend}
+              disabled={resending || loading || isSuccess}
+              className="rounded-xl border border-white/15 px-6 py-3 text-sm text-white/70 backdrop-blur-sm transition-all hover:border-[#7c3aed]/60 hover:bg-[#7c3aed]/10 hover:text-white disabled:opacity-50"
+            >
+              {resending ? "Отправка..." : "Отправить повторно"}
+            </button>
+          </div>
+        </motion.div>
+      </main>
     </div>
   );
 }
