@@ -69,6 +69,7 @@ export type Content = {
     lead: string;
     builds: { os: string; req: string; note: string }[];
     soon: string;
+    downloadCta: string;
     phone: string;
     phoneText: string;
     notReady: string;
@@ -252,11 +253,12 @@ const ru: Content = {
       { os: "Linux", req: "Ubuntu 22.04+, Fedora 38+, Arch", note: "Portable-сборка: chmod +x и запускайте." },
     ],
     soon: "сборка появится здесь",
+    downloadCta: "Скачать",
     phone: "Телефон",
     phoneText:
       "Отдельное приложение ставить не нужно. Откройте раздел «QR-доступ», нажмите «Создать QR» и наведите камеру — всё откроется в браузере телефона на 10 минут.",
     notReady:
-      "Сборки пока не выложены — файлы появятся здесь к первому публичному релизу. До тех пор всё запускается из исходников.",
+      "Windows и macOS уже доступны. Linux пока не выложен — файл появится здесь позже.",
     howInstall: "Как установить",
     docs: "Документация",
   },
@@ -454,11 +456,12 @@ const en: Content = {
       { os: "Linux", req: "Ubuntu 22.04+, Fedora 38+, Arch", note: "Portable build: chmod +x and run it." },
     ],
     soon: "build lands here",
+    downloadCta: "Download",
     phone: "Phone",
     phoneText:
       "Nothing to install. Open the QR access section, press Create QR and point your camera — everything opens in the phone's browser for 10 minutes.",
     notReady:
-      "Builds aren't published yet — the files land here with the first public release. Until then everything runs from source.",
+      "Windows and macOS builds are available now. The Linux build isn't published yet — it'll land here later.",
     howInstall: "How to install",
     docs: "Docs",
   },
@@ -656,11 +659,12 @@ const uk: Content = {
       { os: "Linux", req: "Ubuntu 22.04+, Fedora 38+, Arch", note: "Portable-збірка: chmod +x і запускайте." },
     ],
     soon: "збірка з'явиться тут",
+    downloadCta: "Завантажити",
     phone: "Телефон",
     phoneText:
       "Окремий застосунок встановлювати не потрібно. Відкрийте розділ «QR-доступ», натисніть «Створити QR» і наведіть камеру — усе відкриється в браузері телефона на 10 хвилин.",
     notReady:
-      "Збірки поки не викладені — файли з'являться тут до першого публічного релізу. До того часу все запускається з вихідних кодів.",
+      "Windows і macOS вже доступні. Linux поки не викладений — файл з'явиться тут пізніше.",
     howInstall: "Як встановити",
     docs: "Документація",
   },
@@ -858,11 +862,12 @@ const pl: Content = {
       { os: "Linux", req: "Ubuntu 22.04+, Fedora 38+, Arch", note: "Wersja przenośna: chmod +x i uruchamiaj." },
     ],
     soon: "plik pojawi się tutaj",
+    downloadCta: "Pobierz",
     phone: "Telefon",
     phoneText:
       "Nic nie instalujesz. Otwórz sekcję dostępu QR, naciśnij „Utwórz QR” i skieruj aparat — wszystko otworzy się w przeglądarce telefonu na 10 minut.",
     notReady:
-      "Pliki nie są jeszcze opublikowane — pojawią się tutaj wraz z pierwszym publicznym wydaniem. Do tego czasu wszystko uruchamia się ze źródeł.",
+      "Wersje na Windows i macOS są już dostępne. Linux jeszcze nie jest opublikowany — pojawi się tutaj później.",
     howInstall: "Jak zainstalować",
     docs: "Dokumentacja",
   },

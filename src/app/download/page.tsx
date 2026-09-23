@@ -8,7 +8,17 @@ import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
 
 const ICONS = [Monitor, Apple, Terminal];
-const FILES = ["AI-Hub-Setup.exe", "AI-Hub.dmg", "AI-Hub.AppImage"];
+const FILES = ["AiHub-Setup.exe", "AiHub-Setup.dmg", "AI-Hub.AppImage"];
+
+// Both builds come from the aihub-desktop repo's GitHub Actions pipeline,
+// which builds Windows + macOS on every version tag and attaches both
+// installers to one release. /latest/download/ always resolves to whatever
+// the newest release attaches under this exact filename, so these links
+// never need updating as long as future releases keep the same asset names.
+const RELEASES_BASE =
+  "https://github.com/destrepalorg2-beep/aihub-desktop/releases/latest/download";
+const WINDOWS_DOWNLOAD_URL = `${RELEASES_BASE}/AiHub-Setup.exe`;
+const MAC_DOWNLOAD_URL = `${RELEASES_BASE}/AiHub-Setup.dmg`;
 
 export default function DownloadPage() {
   const { lang } = useT();
@@ -33,8 +43,19 @@ export default function DownloadPage() {
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-1.5 sm:items-end">
-                <span className={buttonVariants({ variant: "outline" })}>{FILES[i]}</span>
-                <span className="text-[11px] text-white/35">{c.soon}</span>
+                {i === 0 || i === 1 ? (
+                  <a
+                    href={i === 0 ? WINDOWS_DOWNLOAD_URL : MAC_DOWNLOAD_URL}
+                    className={buttonVariants({ variant: "default" })}
+                  >
+                    {c.downloadCta} — {FILES[i]}
+                  </a>
+                ) : (
+                  <>
+                    <span className={buttonVariants({ variant: "outline" })}>{FILES[i]}</span>
+                    <span className="text-[11px] text-white/35">{c.soon}</span>
+                  </>
+                )}
               </div>
             </div>
           );
