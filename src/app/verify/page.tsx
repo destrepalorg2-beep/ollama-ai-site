@@ -139,7 +139,6 @@ export default function VerifyPage() {
       />
       <div className="noise-overlay pointer-events-none absolute inset-0 opacity-[0.5] mix-blend-overlay" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-black/90" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(124,58,237,0.28),transparent_60%)]" />
 
       <header className="relative z-10 flex items-center justify-between px-6 py-5">
         <Link href="/" className="text-lg font-semibold text-white">

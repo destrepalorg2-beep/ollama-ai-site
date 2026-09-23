@@ -111,8 +111,6 @@ export default function InputOtp10({
 }: InputOtp10Props) {
   return (
     <div className="relative w-full max-w-sm sm:max-w-md mx-auto rounded-2xl border border-white/10 bg-linear-to-b from-white/[0.05] to-white/[0.015] p-6 sm:p-8 backdrop-blur-xl overflow-hidden group select-none">
-      <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#7c3aed]/15 rounded-full blur-2xl pointer-events-none group-hover:bg-[#7c3aed]/20 transition-colors duration-500" />
-      <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#a855f7]/10 rounded-full blur-2xl pointer-events-none" />
 
       <div className="flex flex-col items-center gap-6 sm:gap-7 relative">
         <div className="relative w-40 h-40 flex items-center justify-center">
