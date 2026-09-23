@@ -69,7 +69,7 @@ export default function VerifyPage() {
     setMessage(null);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/verify-email", {
+      const response = await fetch("/api/auth/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code: finalCode }),
@@ -77,32 +77,12 @@ export default function VerifyPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.token) {
         setMessage({ text: "✅ Email подтверждён! Вход в систему...", type: "success" });
-
-        // Auto-login
-        const deviceId = "web-" + Math.random().toString(36).substring(2, 11);
-        const loginResponse = await fetch("http://localhost:3000/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ deviceId }),
-        });
-
-        if (loginResponse.ok) {
-          const loginData = await loginResponse.json();
-          // Carries email / nickname / plan over from the pending keys, so the
-          // profile page has something to show after verification.
-          completeSignIn(loginData.token, { email: email || undefined, nickname: loginData.nickname, plan: loginData.plan });
-
-          setTimeout(() => {
-            router.push("/profile");
-          }, 1000);
-        } else {
-          setMessage({ text: "Email подтверждён! Перейдите на страницу входа", type: "success" });
-          setTimeout(() => {
-            router.push("/login");
-          }, 2000);
-        }
+        completeSignIn(data.token, { email: email || undefined, nickname: data.nickname, plan: data.plan });
+        setTimeout(() => {
+          router.push("/profile");
+        }, 1000);
       } else {
         if (response.status === 400) {
           setMessage({ text: "Неверный код. Попробуйте ещё раз", type: "error" });
@@ -127,7 +107,7 @@ export default function VerifyPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const response = await fetch("http://localhost:3000/api/auth/send-verification", {
+      const response = await fetch("/api/auth/send-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

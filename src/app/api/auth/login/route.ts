@@ -25,10 +25,10 @@ export async function POST(req: Request): Promise<Response> {
     await ensureSchema();
 
     const result = await sql`
-      SELECT id, password_hash, nickname, plan FROM users WHERE email = ${email}
+      SELECT id, password_hash, nickname, plan, email_verified FROM users WHERE email = ${email}
     `;
     const user = result.rows[0] as
-      | { id: string; password_hash: string; nickname: string; plan: string }
+      | { id: string; password_hash: string; nickname: string; plan: string; email_verified: boolean }
       | undefined;
 
     // Distinguishing "no account" from "wrong password" is a deliberate,
@@ -48,6 +48,16 @@ export async function POST(req: Request): Promise<Response> {
       return NextResponse.json(
         { error: "Invalid email or password.", code: "invalid_credentials" },
         { status: 401 },
+      );
+    }
+
+    // A real password match on an unverified account is exactly the fake-
+    // email case this whole flow exists to stop: the password could be
+    // real, but nobody has proven they can read that inbox yet.
+    if (!user.email_verified) {
+      return NextResponse.json(
+        { error: "Подтвердите email перед входом.", code: "email_not_verified" },
+        { status: 403 },
       );
     }
 

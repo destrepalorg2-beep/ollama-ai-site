@@ -47,6 +47,13 @@ export default function LoginPage() {
         setNoAccountEmail(email);
         return;
       }
+      if (data.code === "email_not_verified") {
+        // Registered but never entered the emailed code — send them to
+        // finish that instead of a dead-end error.
+        setPending({ email });
+        router.push("/verify");
+        return;
+      }
       setError(res.status === 401 ? "Неверный email или пароль." : data.error || "Не удалось войти.");
     } catch {
       // Backend is down. In development we let you through so the site stays

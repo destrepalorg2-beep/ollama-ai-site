@@ -17,17 +17,33 @@ let schemaReady: Promise<void> | null = null;
  *  promise is cached so it only actually runs once per server instance. */
 export function ensureSchema(): Promise<void> {
   if (!schemaReady) {
-    schemaReady = sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        nickname TEXT NOT NULL,
-        plan TEXT NOT NULL DEFAULT 'free',
-        avatar TEXT,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-      )
-    `.then(() => undefined);
+    schemaReady = (async () => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          nickname TEXT NOT NULL,
+          plan TEXT NOT NULL DEFAULT 'free',
+          avatar TEXT,
+          email_verified BOOLEAN NOT NULL DEFAULT false,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
+      // Added after the table already existed in some environments —
+      // guarded ALTER so this stays a no-op once the column is there.
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false`;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS email_verifications (
+          email TEXT PRIMARY KEY,
+          code TEXT NOT NULL,
+          attempts INTEGER NOT NULL DEFAULT 0,
+          expires_at TIMESTAMPTZ NOT NULL,
+          last_sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
+    })();
   }
   return schemaReady;
 }
