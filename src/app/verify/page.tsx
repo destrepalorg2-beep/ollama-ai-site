@@ -75,26 +75,26 @@ export default function VerifyPage() {
 
       if (response.ok && data.token) {
         setIsSuccess(true);
-        setMessage({ text: "Email подтверждён! Вход в систему...", type: "success" });
+        setMessage({ text: t("verify.successMessage"), type: "success" });
         completeSignIn(data.token, { email: email || undefined, nickname: data.nickname, plan: data.plan });
         setTimeout(() => {
           router.push("/profile");
         }, 1000);
       } else {
         if (data.code === "EXPIRED") {
-          setMessage({ text: "Код истёк. Запросите новый", type: "error" });
+          setMessage({ text: t("verify.errorExpired"), type: "error" });
         } else if (data.code === "TOO_MANY_ATTEMPTS") {
-          setMessage({ text: data.error || "Слишком много неверных попыток", type: "error" });
+          setMessage({ text: data.error || t("verify.errorTooMany"), type: "error" });
         } else if (response.status === 400) {
-          setMessage({ text: "Неверный код. Попробуйте ещё раз", type: "error" });
+          setMessage({ text: t("verify.errorInvalid"), type: "error" });
         } else {
-          setMessage({ text: data.error || "Ошибка проверки кода", type: "error" });
+          setMessage({ text: data.error || t("verify.errorGeneric"), type: "error" });
         }
         setCode("");
       }
     } catch (error) {
       console.error("Verification error:", error);
-      setMessage({ text: "Ошибка соединения с сервером", type: "error" });
+      setMessage({ text: t("verify.errorConnection"), type: "error" });
     } finally {
       setLoading(false);
     }
@@ -111,20 +111,20 @@ export default function VerifyPage() {
       });
 
       if (response.ok) {
-        setMessage({ text: "Новый код отправлен!", type: "success" });
+        setMessage({ text: t("verify.resendSuccess"), type: "success" });
       } else {
         const data = await response.json().catch(() => ({}));
         setMessage({
           text:
             response.status === 429
-              ? "Слишком много попыток. Подождите 10 минут"
-              : data.error || "Ошибка отправки",
+              ? t("verify.resendTooMany")
+              : data.error || t("verify.resendError"),
           type: "error",
         });
       }
     } catch (error) {
       console.error("Resend error:", error);
-      setMessage({ text: "Ошибка соединения", type: "error" });
+      setMessage({ text: t("verify.resendConnectionError"), type: "error" });
     } finally {
       setResending(false);
     }
@@ -163,8 +163,8 @@ export default function VerifyPage() {
           className="flex w-full max-w-md flex-col items-center gap-5"
         >
           <div className="text-center">
-            <h1 className="mb-2 text-2xl font-bold text-white sm:text-3xl">Проверьте почту</h1>
-            <p className="text-sm text-white/60">Мы отправили 6-значный код подтверждения на</p>
+            <h1 className="mb-2 text-2xl font-bold text-white sm:text-3xl">{t("verify.title")}</h1>
+            <p className="text-sm text-white/60">{t("verify.subtitle")}</p>
             <p className="mt-2 inline-block break-all rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/80 backdrop-blur-sm">
               {email}
             </p>
@@ -193,20 +193,23 @@ export default function VerifyPage() {
             onComplete={submitCode}
             isSuccess={isSuccess}
             disabled={loading || isSuccess}
-            title={loading ? "Проверка..." : "Введите код"}
-            subtitle="6 цифр из письма — код действует 15 минут."
-            successTitle="Email подтверждён"
-            successSubtitle="Выполняется вход..."
+            title={loading ? t("verify.otpTitleLoading") : t("verify.otpTitle")}
+            subtitle={t("verify.otpSubtitle")}
+            successTitle={t("verify.successTitle")}
+            successSubtitle={t("verify.successSubtitle")}
+            waitingLabel={t("verify.otpWaiting")}
+            enteredLabel={t("verify.otpEntered")}
+            completeLabel={t("verify.otpComplete")}
           />
 
           <div className="text-center">
-            <p className="mb-3 text-sm text-white/50">Не получили код?</p>
+            <p className="mb-3 text-sm text-white/50">{t("verify.noCode")}</p>
             <button
               onClick={handleResend}
               disabled={resending || loading || isSuccess}
               className="rounded-xl border border-white/15 px-6 py-3 text-sm text-white/70 backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10 hover:text-white disabled:opacity-50"
             >
-              {resending ? "Отправка..." : "Отправить повторно"}
+              {resending ? t("verify.resending") : t("verify.resend")}
             </button>
           </div>
         </motion.div>

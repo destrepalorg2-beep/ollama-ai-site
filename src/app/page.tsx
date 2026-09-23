@@ -75,8 +75,11 @@ function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const v = videoRef.current; if (!v) return;
+    // { once: true }: cloud video can refire "canplay" mid-playback (a brief
+    // rebuffer, or the loop restart) — without this, that re-ran the fade and
+    // snapped opacity back to 0 every time, flashing the hero to black.
     const onCanPlay = () => { v.play().catch(() => {}); fade(v, 0, 1, 700); };
-    v.addEventListener("canplay", onCanPlay);
+    v.addEventListener("canplay", onCanPlay, { once: true });
     return () => { v.removeEventListener("canplay", onCanPlay); };
   }, []);
   return (

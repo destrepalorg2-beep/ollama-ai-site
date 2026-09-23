@@ -95,6 +95,12 @@ export interface InputOtp10Props {
   subtitle?: string;
   successTitle?: string;
   successSubtitle?: string;
+  /** Status line under the slots. enteredLabel takes "{n}" as a placeholder
+   *  for the digit count, e.g. "Entered: {n} / 6". All three default to
+   *  Russian so the component still works if a caller doesn't localize it. */
+  waitingLabel?: string;
+  enteredLabel?: string;
+  completeLabel?: string;
 }
 
 export default function InputOtp10({
@@ -108,6 +114,9 @@ export default function InputOtp10({
   subtitle = "Введите 6-значный код из письма.",
   successTitle = "Код подтверждён",
   successSubtitle = "Вход выполняется...",
+  waitingLabel = "Ожидание ввода…",
+  enteredLabel = "Введено: {n} / 6",
+  completeLabel = "Код введён",
 }: InputOtp10Props) {
   return (
     <div className="relative w-full max-w-sm sm:max-w-md mx-auto p-6 sm:p-8 overflow-hidden group select-none">
@@ -189,10 +198,10 @@ export default function InputOtp10({
         <div className="h-4 flex items-center justify-center">
           <span className="text-xs font-mono text-white/40 uppercase tracking-widest">
             {value.length === 0
-              ? "Ожидание ввода…"
+              ? waitingLabel
               : value.length < 6
-                ? `Введено: ${value.length} / 6`
-                : "Код введён"}
+                ? enteredLabel.replace("{n}", String(value.length))
+                : completeLabel}
           </span>
         </div>
       </div>
