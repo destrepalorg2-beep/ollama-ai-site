@@ -20,7 +20,13 @@ export async function POST(req: Request): Promise<Response> {
   const email = String(body.email || "").toLowerCase().trim();
   const password = String(body.password || "");
   const nickname = String(body.nickname || "").trim();
-  const plan = ["free", "pro", "ultra"].includes(body.plan) ? body.plan : "free";
+  // The plan picked on the register form is NOT granted here — it's just
+  // remembered so the client can route the person to pay for it afterward.
+  // Actual upgrades only ever happen through a confirmed payment (Telegram
+  // Stars auto-redeem, or an owner approving a receipt) — see
+  // /api/telegram/webhook's redeemPayment(). Every new account starts free.
+  const desiredPlan = ["free", "pro", "ultra"].includes(body.plan) ? body.plan : "free";
+  const plan = "free";
 
   if (!email || !email.includes("@")) {
     return NextResponse.json({ error: "Некорректный email." }, { status: 400 });
@@ -88,6 +94,7 @@ export async function POST(req: Request): Promise<Response> {
         ? "Мы отправили код подтверждения на почту."
         : "Регистрация создана, но письмо отправить не удалось — обратитесь в поддержку.",
       email,
+      desiredPlan,
     });
   } catch (err) {
     console.error("register error", err);

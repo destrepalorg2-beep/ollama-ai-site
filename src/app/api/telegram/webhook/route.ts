@@ -72,10 +72,6 @@ async function setOwner(chatId: string) {
 /* ── texts (mirrors bot/bot.mjs — keep the two in sync if wording changes) ── */
 
 const PAY = {
-  recipient: "Степан П.",
-  phone: "+7 951 533-43-91",
-  cardOzon: "2204 3211 7840 1139",
-  cardTbank: "2200 7019 9069 3829",
   ton: "UQAF9LJyeKJQrM0wyoHeBsDxJLqLcYBVrEVgtl_vSEm54oos",
 };
 
@@ -90,17 +86,13 @@ const WELCOME =
 const MAIN_KB = kb([
   [{ text: "⭐ Оплатить звёздами", callback_data: "stars" }],
   [{ text: "🧾 Прислать чек перевода", callback_data: "receipt" }],
-  [{ text: "💳 Реквизиты для перевода", callback_data: "details" }],
+  [{ text: "💎 Кошелёк TON", callback_data: "details" }],
 ]);
 
 const detailsText = () =>
-  "<b>Реквизиты</b>\n" +
-  `Получатель: <b>${PAY.recipient}</b>\n\n` +
-  `СБП: <code>${PAY.phone}</code>\n` +
-  `Ozon Банк: <code>${PAY.cardOzon}</code>\n` +
-  `Т-Банк: <code>${PAY.cardTbank}</code>\n` +
-  `TON: <code>${PAY.ton}</code>\n\n` +
-  "Нажмите на любую строку, чтобы скопировать.\n" +
+  "<b>Оплата в TON</b>\n" +
+  `Адрес: <code>${PAY.ton}</code>\n\n` +
+  "Нажмите, чтобы скопировать.\n" +
   "После перевода пришлите сюда скриншот или чек.";
 
 const plansKb = kb([

@@ -35,16 +35,28 @@ export default function ProfilePage() {
   const [tab, setTab] = useState("profile");
   const [payOpen, setPayOpen] = useState(false);
   const [build, setBuild] = useState<string | null>(null);
+  const [upgradePlan, setUpgradePlan] = useState<string | null>(null);
 
   useEffect(() => {
     if (ready && !account) router.replace("/login");
   }, [ready, account, router]);
 
   // Deep link from the account menu: /profile?tab=subscription
+  // Deep link from just after registering with a paid plan picked:
+  // /profile?upgrade=pro — the plan is NOT granted at signup (see
+  // /api/auth/register), so this opens the actual payment dialog for it
+  // instead of silently having it already active.
   useEffect(() => {
     try {
-      const t = new URLSearchParams(window.location.search).get("tab");
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get("tab");
       if (t === "subscription" || t === "download") setTab(t);
+      const u = params.get("upgrade");
+      if (u === "pro" || u === "ultra") {
+        setUpgradePlan(u);
+        setTab("subscription");
+        setPayOpen(true);
+      }
     } catch {}
   }, []);
 
@@ -78,7 +90,11 @@ export default function ProfilePage() {
 
   return (
     <div className="app-theme min-h-screen">
-      <PaymentDialog open={payOpen} onClose={() => setPayOpen(false)} plan={account.plan ?? undefined} />
+      <PaymentDialog
+        open={payOpen}
+        onClose={() => setPayOpen(false)}
+        plan={upgradePlan ?? account.plan ?? undefined}
+      />
       <header className="flex items-center justify-between px-6 py-5">
         <Link href="/" className="text-lg font-semibold text-foreground">AI HUB</Link>
         <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">{t("auth.home")}</Link>

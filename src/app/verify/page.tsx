@@ -76,9 +76,16 @@ export default function VerifyPage() {
       if (response.ok && data.token) {
         setIsSuccess(true);
         setMessage({ text: t("verify.successMessage"), type: "success" });
+        // Read the plan picked on the register form BEFORE completeSignIn
+        // clears it — the account itself is created on "free" (see
+        // /api/auth/register), so a paid pick needs to route to actually
+        // paying for it, not just land on the profile page looking upgraded.
+        const desiredPlan = getPending()?.plan;
         completeSignIn(data.token, { email: email || undefined, nickname: data.nickname, plan: data.plan });
         setTimeout(() => {
-          router.push("/profile");
+          router.push(
+            desiredPlan === "pro" || desiredPlan === "ultra" ? `/profile?upgrade=${desiredPlan}` : "/profile",
+          );
         }, 1000);
       } else {
         if (data.code === "EXPIRED") {
