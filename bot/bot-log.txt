@@ -1,22 +1,17 @@
---- 2026-09-15T06:30:28.939Z ---
+--- 2026-09-23T17:02:50.295Z ---
 env file: C:\Users\STEPAN\Desktop\ollama-ai-site\.env.local
-keys found: NEXT_PUBLIC_TG_BOT, TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
+keys found: NEXT_PUBLIC_TG_BOT, OWNER_CHAT_ID, TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
 token present: yes (46 chars)
 proxy: не задан, ищу сам
 
   Ищу путь до Telegram...
-  вариантов: 5 (напрямую, HTTP-прокси системный прокси 127.0.0.1:10809, SOCKS5 локальный 127.0.0.1:10808, HTTP-прокси локальный 127.0.0.1:10808, SOCKS5 локальный 127.0.0.1:10809)
+  вариантов: 5 (напрямую, SOCKS5 локальный 127.0.0.1:10808, HTTP-прокси локальный 127.0.0.1:10808, SOCKS5 локальный 127.0.0.1:10809, HTTP-прокси локальный 127.0.0.1:10809)
   пробую напрямую ...
-    не прошло (ETIMEDOUT)
-  пробую HTTP-прокси системный прокси 127.0.0.1:10809 ...
     ОК
-  Путь до Telegram: HTTP-прокси системный прокси 127.0.0.1:10809
+  Путь до Telegram: напрямую
 
   Бот @paybotayhub_bot запущен.
   Файл настроек: C:\Users\STEPAN\Desktop\ollama-ai-site\.env.local
-
-  OWNER_CHAT_ID не задан — чеки никуда не пересылаются.
-  Напишите боту /id, скопируйте число и добавьте в .env.local:
-      OWNER_CHAT_ID=ваш_id
+  Чеки пересылаются: 8973603889
 
   Окно не закрывать — бот отвечает, пока оно открыто.

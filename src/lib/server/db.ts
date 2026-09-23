@@ -58,6 +58,35 @@ export function ensureSchema(): Promise<void> {
           consumed_at TIMESTAMPTZ
         )
       `;
+
+      // Small key/value store for the payment bot's own state (currently just
+      // the owner's Telegram chat id) — see /api/telegram/webhook. The bot
+      // used to keep this in a line of .env.local on whoever's laptop ran it;
+      // now that it's a webhook on Vercel there's no local file to keep it in,
+      // so it lives here instead.
+      await sql`
+        CREATE TABLE IF NOT EXISTS bot_settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        )
+      `;
+
+      // Payment-receipt screenshots people send the bot for the manual
+      // (non-Stars) payment path. Replaces the old receipts.json file next to
+      // bot.mjs — same reason as bot_settings above.
+      await sql`
+        CREATE TABLE IF NOT EXISTS bot_receipts (
+          id TEXT PRIMARY KEY,
+          chat_id TEXT NOT NULL,
+          name TEXT,
+          username TEXT,
+          from_id TEXT,
+          message_id BIGINT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          status TEXT NOT NULL DEFAULT 'pending',
+          decided_at TIMESTAMPTZ
+        )
+      `;
     })();
   }
   return schemaReady;

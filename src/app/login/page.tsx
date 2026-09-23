@@ -54,7 +54,7 @@ export default function LoginPage() {
         router.push("/verify");
         return;
       }
-      setError(res.status === 401 ? "Неверный email или пароль." : data.error || "Не удалось войти.");
+      setError(res.status === 401 ? t("auth.errorInvalidCredentials") : data.error || t("auth.errorGeneric"));
     } catch {
       // Backend is down. In development we let you through so the site stays
       // clickable; in a production build this is a hard error — a bypass that
@@ -64,7 +64,7 @@ export default function LoginPage() {
         router.push("/profile");
         return;
       }
-      setError("Сервер недоступен. Попробуйте позже.");
+      setError(t("auth.errorServerDown"));
     } finally {
       setBusy(false);
     }
@@ -72,12 +72,12 @@ export default function LoginPage() {
 
   const social = (p: Provider) => {
     setError(null);
-    setNotice(`Вход через ${p === "sso" ? "SSO" : p} пока не подключён — войдите по email.`);
+    setNotice(t("auth.socialNotConnected").replace("{provider}", p === "sso" ? "SSO" : p));
   };
 
   const emailLink = () => {
     setError(null);
-    setNotice("Введите email и пароль — вход по ссылке появится позже.");
+    setNotice(t("auth.emailLinkNotice"));
   };
 
   return (
@@ -92,13 +92,22 @@ export default function LoginPage() {
           {noAccountEmail && (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm">
               <p className="text-white/80">
-                Аккаунта с email <span className="font-medium text-white">{noAccountEmail}</span> ещё нет.
+                {(() => {
+                  const [before, after] = t("auth.noAccount").split("{email}");
+                  return (
+                    <>
+                      {before}
+                      <span className="font-medium text-white">{noAccountEmail}</span>
+                      {after}
+                    </>
+                  );
+                })()}
               </p>
               <Link
                 href={`/register?email=${encodeURIComponent(noAccountEmail)}`}
                 className="mt-2 inline-block font-medium text-foreground underline underline-offset-4"
               >
-                Зарегистрироваться →
+                {t("auth.registerCta")}
               </Link>
             </div>
           )}
@@ -110,7 +119,7 @@ export default function LoginPage() {
             onEmailSubmit={submit}
             onSocialSignIn={social}
             onEmailLink={emailLink}
-            onForgot={() => setNotice("Напишите в поддержку на странице «Контакты» — поможем восстановить доступ.")}
+            onForgot={() => setNotice(t("auth.forgotNotice"))}
           />
         </div>
       </main>

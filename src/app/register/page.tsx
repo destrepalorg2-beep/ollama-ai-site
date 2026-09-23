@@ -9,16 +9,26 @@ import { AuthForm, type Provider } from "@/components/ui/auth-form";
 import { Input, Label } from "@/components/ui/input";
 import { API_BASE, DEV_MODE, completeSignIn, setPending, signInOffline } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
+import { CONTENT } from "@/lib/content";
 
-const PLANS: Record<string, { name: string; price: string }> = {
-  free: { name: "Free", price: "0 ₽ · бесплатно" },
-  pro: { name: "Pro", price: "490 ₽ / мес" },
-  ultra: { name: "Ultra", price: "1 490 ₽ / мес" },
-};
+const MONTHLY_RUB: Record<string, number> = { free: 0, pro: 490, ultra: 1490 };
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const perMonth = CONTENT[lang].landing.perMonth;
+  const PLANS: Record<string, { name: string; price: string }> = Object.fromEntries(
+    CONTENT[lang].plans.map((p) => [
+      p.id,
+      {
+        name: p.name,
+        price:
+          MONTHLY_RUB[p.id] === 0
+            ? `0 ₽ · ${t("register.free")}`
+            : `${MONTHLY_RUB[p.id].toLocaleString("ru-RU")} ₽ ${perMonth}`,
+      },
+    ]),
+  );
   const [plan, setPlan] = useState<string | null>(null);
   const [emailFromLink, setEmailFromLink] = useState<string | undefined>(undefined);
   const [nickname, setNickname] = useState("");
@@ -42,7 +52,7 @@ export default function RegisterPage() {
     setError(null);
     setNotice(null);
     if (nickname.trim().length < 2) {
-      setError("Никнейм минимум 2 символа.");
+      setError(t("auth.errorNicknameShort"));
       return;
     }
     setBusy(true);
@@ -65,14 +75,14 @@ export default function RegisterPage() {
         }
         return;
       }
-      setError(res.status === 409 ? "Этот email уже зарегистрирован — войдите." : data.error || "Не удалось зарегистрироваться.");
+      setError(res.status === 409 ? t("auth.errorEmailTaken") : data.error || t("auth.errorRegisterGeneric"));
     } catch {
       if (DEV_MODE) {
         signInOffline(email, { nickname: nickname.trim(), plan: plan || "free" });
         router.push("/profile");
         return;
       }
-      setError("Сервер недоступен. Попробуйте позже.");
+      setError(t("auth.errorServerDown"));
     } finally {
       setBusy(false);
     }
@@ -80,7 +90,7 @@ export default function RegisterPage() {
 
   const social = (p: Provider) => {
     setError(null);
-    setNotice(`Регистрация через ${p === "sso" ? "SSO" : p} пока не подключена — используйте email.`);
+    setNotice(t("auth.socialRegisterNotConnected").replace("{provider}", p === "sso" ? "SSO" : p));
   };
 
   return (
@@ -94,13 +104,13 @@ export default function RegisterPage() {
         {plan && PLANS[plan] && (
           <div className="flex w-full max-w-[380px] items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
             <div className="min-w-0">
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Выбранный тариф</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("register.selectedPlan")}</div>
               <div className="truncate text-sm font-semibold text-foreground">
                 {PLANS[plan].name} <span className="font-normal text-muted-foreground">· {PLANS[plan].price}</span>
               </div>
             </div>
             <Link href="/pricing" className="shrink-0 text-xs font-medium text-foreground underline-offset-4 hover:underline">
-              Изменить
+              {t("register.change")}
             </Link>
           </div>
         )}
@@ -113,7 +123,7 @@ export default function RegisterPage() {
           defaultEmail={emailFromLink}
           onEmailSubmit={submit}
           onSocialSignIn={social}
-          onEmailLink={() => setNotice("Заполните форму — вход по ссылке появится позже.")}
+          onEmailLink={() => setNotice(t("auth.emailLinkNoticeRegister"))}
           extraTop={
             <div className="space-y-2">
               <Label htmlFor="nickname">{t("auth.nickname")}</Label>

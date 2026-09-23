@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 /**
  * Modal dialog without @radix-ui/react-dialog (not installed). Keeps the parts
@@ -25,6 +26,7 @@ export function Dialog({
   children: React.ReactNode;
   className?: string;
 }) {
+  const { t } = useT();
   const [mounted, setMounted] = React.useState(false);
   const opener = React.useRef<HTMLElement | null>(null);
 
@@ -77,7 +79,7 @@ export function Dialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label="Закрыть"
+                  aria-label={t("common.close")}
                   className="-mr-1 shrink-0 rounded-lg p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <X className="size-4" />

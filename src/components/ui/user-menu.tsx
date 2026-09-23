@@ -23,7 +23,7 @@ export function UserMenu({ account }: { account: Account }) {
   return (
     <div className="relative">
       <DropdownMenu>
-        <DropdownMenuTrigger aria-label="Меню аккаунта" className="block rounded-full">
+        <DropdownMenuTrigger aria-label={t("common.accountMenu")} className="block rounded-full">
           <Avatar className="size-8">
             <AvatarFallback className="bg-foreground text-[13px] text-black">
               {initials(account)}
