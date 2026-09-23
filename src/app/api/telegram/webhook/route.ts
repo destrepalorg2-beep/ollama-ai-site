@@ -238,7 +238,15 @@ async function onMessage(msg: any) {
     await addReceipt(rec);
     await send(chat, "🧾 Чек получен. Проверим и подключим тариф — обычно в течение дня.");
     const owner = await getOwner();
-    if (owner) await forwardReceiptToOwner(owner, { ...rec, chat_id: String(rec.chat) });
+    if (owner) {
+      await forwardReceiptToOwner(owner, {
+        id: rec.id,
+        chat_id: String(rec.chat),
+        name: rec.name,
+        username: rec.username,
+        message_id: rec.messageId,
+      });
+    }
     return;
   }
 
