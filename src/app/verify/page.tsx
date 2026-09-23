@@ -34,7 +34,15 @@ export default function VerifyPage() {
   const router = useRouter();
   const { t } = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const email = typeof window !== "undefined" ? (getPending()?.email ?? null) : null;
+  // Read once, at mount — NOT recomputed on every render. completeSignIn()
+  // clears the pending draft on success, and if this read from localStorage
+  // directly on every render, that clear would flip `email` to null on the
+  // very next render, firing the "no pending registration" redirect below
+  // and racing the profile redirect below it — kicking a just-verified
+  // person back to the registration form instead of into their account.
+  const [email] = useState<string | null>(() =>
+    typeof window !== "undefined" ? (getPending()?.email ?? null) : null,
+  );
 
   useEffect(() => {
     if (!email) {

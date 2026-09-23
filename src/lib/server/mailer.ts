@@ -1,11 +1,9 @@
 /**
  * Sends the registration verification-code email via SMTP (Nodemailer).
  * Server-side only. Reuses the same SMTP_* env vars / Gmail account the
- * desktop app (ai hub) already uses, so it's one mailbox to manage. Kept
- * deliberately plain/neutral (light background, one accent color) rather
- * than mirroring the site's dark purple look — a simple transactional
- * email reads better across mail clients and doesn't trip spam filters
- * as easily as a heavily styled one.
+ * desktop app (ai hub) already uses, so it's one mailbox to manage. Styled
+ * to match the site's own dark, purple-accented look rather than a generic
+ * light transactional template.
  */
 
 import nodemailer from 'nodemailer';
@@ -37,34 +35,34 @@ function buildVerificationEmailHtml(code: string): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Код подтверждения</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:480px;margin:0 auto;padding:32px 16px;">
-    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+<body style="margin:0;padding:0;background:#0b0b16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:480px;margin:0 auto;padding:40px 16px;">
+    <div style="background:linear-gradient(180deg,#15121f 0%,#0e0c16 100%);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);">
 
-      <div style="padding:28px 32px;border-bottom:1px solid #e4e4e7;">
-        <span style="color:#18181b;font-size:16px;font-weight:700;">AI HUB</span>
+      <div style="padding:28px 32px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.02em;">AI HUB</span>
       </div>
 
-      <div style="padding:32px;">
-        <h1 style="color:#18181b;margin:0 0 12px;font-size:18px;font-weight:600;">Подтверждение email</h1>
-        <p style="color:#52525b;font-size:14px;line-height:1.6;margin:0 0 24px;">
+      <div style="padding:36px 32px;">
+        <h1 style="color:#ffffff;margin:0 0 12px;font-size:19px;font-weight:600;">Подтверждение email</h1>
+        <p style="color:rgba(255,255,255,0.6);font-size:14px;line-height:1.6;margin:0 0 28px;">
           Здравствуйте! Введите этот код на странице подтверждения, чтобы завершить регистрацию в AI HUB:
         </p>
 
-        <div style="background:#f4f4f5;border-radius:8px;padding:20px;text-align:center;margin:0 0 24px;">
-          <span style="font-family:'SFMono-Regular',Consolas,Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:6px;color:#18181b;">${code}</span>
+        <div style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.35);border-radius:12px;padding:22px;text-align:center;margin:0 0 28px;">
+          <span style="font-family:'SFMono-Regular',Consolas,Menlo,monospace;font-size:34px;font-weight:700;letter-spacing:8px;color:#c4b5fd;">${code}</span>
         </div>
 
-        <p style="color:#71717a;font-size:13px;line-height:1.6;margin:0 0 4px;">
+        <p style="color:rgba(255,255,255,0.45);font-size:13px;line-height:1.6;margin:0 0 4px;">
           Код действителен 15 минут. Никому его не сообщайте.
         </p>
-        <p style="color:#a1a1aa;font-size:13px;line-height:1.6;margin:0;">
+        <p style="color:rgba(255,255,255,0.3);font-size:13px;line-height:1.6;margin:0;">
           Не регистрировались в AI HUB? Просто проигнорируйте это письмо.
         </p>
       </div>
 
-      <div style="padding:16px 32px;border-top:1px solid #e4e4e7;">
-        <p style="color:#a1a1aa;font-size:12px;margin:0;">© AI HUB</p>
+      <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.08);">
+        <p style="color:rgba(255,255,255,0.3);font-size:12px;margin:0;">© AI HUB</p>
       </div>
     </div>
   </div>
