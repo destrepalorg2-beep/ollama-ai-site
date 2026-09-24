@@ -257,8 +257,7 @@ const ru: Content = {
     phone: "Телефон",
     phoneText:
       "Отдельное приложение ставить не нужно. Откройте раздел «QR-доступ», нажмите «Создать QR» и наведите камеру — всё откроется в браузере телефона на 10 минут.",
-    notReady:
-      "Windows и macOS уже доступны. Linux пока не выложен — файл появится здесь позже.",
+    notReady: "Windows, macOS и Linux — все сборки уже доступны для скачивания.",
     howInstall: "Как установить",
     docs: "Документация",
   },
@@ -460,8 +459,7 @@ const en: Content = {
     phone: "Phone",
     phoneText:
       "Nothing to install. Open the QR access section, press Create QR and point your camera — everything opens in the phone's browser for 10 minutes.",
-    notReady:
-      "Windows and macOS builds are available now. The Linux build isn't published yet — it'll land here later.",
+    notReady: "Windows, macOS and Linux — all builds are available to download now.",
     howInstall: "How to install",
     docs: "Docs",
   },
@@ -663,8 +661,7 @@ const uk: Content = {
     phone: "Телефон",
     phoneText:
       "Окремий застосунок встановлювати не потрібно. Відкрийте розділ «QR-доступ», натисніть «Створити QR» і наведіть камеру — усе відкриється в браузері телефона на 10 хвилин.",
-    notReady:
-      "Windows і macOS вже доступні. Linux поки не викладений — файл з'явиться тут пізніше.",
+    notReady: "Windows, macOS і Linux — усі збірки вже доступні для завантаження.",
     howInstall: "Як встановити",
     docs: "Документація",
   },
@@ -866,8 +863,7 @@ const pl: Content = {
     phone: "Telefon",
     phoneText:
       "Nic nie instalujesz. Otwórz sekcję dostępu QR, naciśnij „Utwórz QR” i skieruj aparat — wszystko otworzy się w przeglądarce telefonu na 10 minut.",
-    notReady:
-      "Wersje na Windows i macOS są już dostępne. Linux jeszcze nie jest opublikowany — pojawi się tutaj później.",
+    notReady: "Windows, macOS i Linux — wszystkie wersje są już dostępne do pobrania.",
     howInstall: "Jak zainstalować",
     docs: "Dokumentacja",
   },
