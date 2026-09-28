@@ -8,7 +8,7 @@ echo ======================================== > deploy-log.txt
 echo   Committing and pushing changes >> deploy-log.txt
 echo ======================================== >> deploy-log.txt
 git add -A >> deploy-log.txt 2>&1
-git commit -m "Enforce one-email-one-account: block duplicate registration, offer sign-in/register CTAs" >> deploy-log.txt 2>&1
+git commit -m "Add /api/admin/stats: real site-user data for the app's hidden admin panel" >> deploy-log.txt 2>&1
 echo commit exit code: %errorlevel% >> deploy-log.txt
 git push >> deploy-log.txt 2>&1
 echo push exit code: %errorlevel% >> deploy-log.txt
