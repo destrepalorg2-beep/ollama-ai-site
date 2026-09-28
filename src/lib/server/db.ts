@@ -46,6 +46,22 @@ export function ensureSchema(): Promise<void> {
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE`;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS microsoft_id TEXT UNIQUE`;
 
+      // Real login sessions — one row per sign-in (password, Google,
+      // Microsoft, Telegram) — backing the "Active sessions" list on
+      // /profile and in the desktop app's settings. See
+      // src/lib/server/sessions.ts.
+      await sql`
+        CREATE TABLE IF NOT EXISTS sessions (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          user_agent TEXT,
+          ip TEXT,
+          revoked_at TIMESTAMPTZ
+        )
+      `;
+
       await sql`
         CREATE TABLE IF NOT EXISTS email_verifications (
           email TEXT PRIMARY KEY,

@@ -9,22 +9,15 @@ import { SiteNav } from "@/components/ui/site-nav";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
+import { useAuth } from "@/lib/auth";
+import { planPrice, formatPrice } from "@/lib/pricing";
 
 /* ── Config (kept in-file so no new modules are imported) ─────────────────── */
 const HUB = {
   name: "AI HUB",
   apiBase: "http://localhost:3000",
-  // Prices only — every user-facing plan string lives in lib/content.ts so it
-  // can be translated; these are matched to it by id.
-  plans: [
-    { id: "free", monthly: 0, yearly: 0 },
-    { id: "pro", monthly: 490, yearly: 4900, popular: true },
-    { id: "ultra", monthly: 1490, yearly: 14900 },
-  ] as { id: string; monthly: number; yearly: number; popular?: boolean }[],
   models: ["llama3", "llama2", "mistral", "phi3", "gemma", "qwen2", "codellama", "deepseek-coder"],
 };
-
-const rub = (n: number) => n.toLocaleString("ru-RU") + " ₽";
 
 const V_HERO = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4";
 const V_FEATURED = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4";
@@ -233,6 +226,7 @@ function Services() {
 
 function Pricing() {
   const { lang } = useT();
+  const { account } = useAuth();
   const C = CONTENT[lang];
   const L = C.landing;
   const ref = useRef<HTMLDivElement>(null);
@@ -251,25 +245,38 @@ function Pricing() {
           <Button onClick={() => setYearly(true)} variant={yearly ? "default" : "ghost"} size="sm" className="rounded-full">{L.yearly} <span className="ml-1 text-emerald-400">{L.save}</span></Button>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          {HUB.plans.map((pl) => {
-            const perMonth = pl.monthly === 0 ? 0 : yearly ? Math.round(pl.yearly / 12) : pl.monthly;
-            const tr = C.plans.find((x) => x.id === pl.id)!;
-            const billed = pl.monthly === 0 ? L.freeForever : yearly ? `${L.billedYearly} · ${rub(pl.yearly)}` : L.billedMonthly;
+          {C.plans.map((tr) => {
+            const price = planPrice(lang, tr.id);
+            const popular = tr.id === "pro";
+            const perMonth = price.monthly === 0 ? 0 : yearly ? Math.round((price.yearly / 12) * 100) / 100 : price.monthly;
+            const billed = price.monthly === 0 ? L.freeForever : yearly ? `${L.billedYearly} · ${formatPrice(lang, price.yearly)}` : L.billedMonthly;
+            // Already signed in: skip the registration form (it would just
+            // 409 "email already taken" and bounce to a login prompt) and go
+            // straight to the payment dialog on the profile page. Signed
+            // out: registering IS how you get an account, so that stays.
+            const href =
+              price.monthly === 0
+                ? account
+                  ? "/profile"
+                  : "/register"
+                : account
+                  ? `/profile?upgrade=${tr.id}`
+                  : `/register?plan=${tr.id}`;
             return (
-              <div key={pl.id} className={`relative flex flex-col rounded-3xl border p-6 ${pl.popular ? "border-white/25 bg-white/[0.03]" : "border-white/10"}`}>
-                {pl.popular && <span className="absolute right-5 top-5 rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white">{L.popular}</span>}
+              <div key={tr.id} className={`relative flex flex-col rounded-3xl border p-6 ${popular ? "border-white/25 bg-white/[0.03]" : "border-white/10"}`}>
+                {popular && <span className="absolute right-5 top-5 rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white">{L.popular}</span>}
                 <div className="text-lg font-semibold text-white">{tr.name}</div>
                 <div className="mt-1 text-sm text-white/50">{tr.info}</div>
                 <div className="mt-5 flex items-end gap-1">
-                  <span className="text-4xl font-bold tracking-tight text-white">{pl.monthly === 0 ? "0 ₽" : rub(perMonth)}</span>
-                  {pl.monthly !== 0 && <span className="pb-1 text-sm text-white/50">{L.perMonth}</span>}
+                  <span className="text-4xl font-bold tracking-tight text-white">{formatPrice(lang, perMonth)}</span>
+                  {price.monthly !== 0 && <span className="pb-1 text-sm text-white/50">{L.perMonth}</span>}
                 </div>
                 <div className="mt-1 text-xs text-white/50">{billed}</div>
                 <ul className="mt-6 flex-1 space-y-3">
                   {tr.feats.map((f) => (<li key={f} className="flex items-start gap-2.5 text-sm text-white/90"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" strokeWidth={2.4} /> {f}</li>))}
                 </ul>
-                <Link href={pl.monthly === 0 ? "/register" : `/register?plan=${pl.id}`} className={buttonVariants({ variant: pl.popular ? "default" : "outline", size: "full", className: "mt-7" })}>
-                  {pl.monthly === 0 ? L.startFree : `${L.choose} ${tr.name}`}
+                <Link href={href} className={buttonVariants({ variant: popular ? "default" : "outline", size: "full", className: "mt-7" })}>
+                  {price.monthly === 0 ? L.startFree : `${L.choose} ${tr.name}`}
                 </Link>
               </div>
             );

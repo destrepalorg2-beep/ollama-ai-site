@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql, ensureSchema } from "@/lib/server/db";
 import { signToken } from "@/lib/server/jwt";
+import { createSession } from "@/lib/server/sessions";
 import { clientIp, isRateLimited } from "@/lib/server/rate-limit";
 
 const MAX_ATTEMPTS = 5;
@@ -55,7 +56,8 @@ export async function POST(req: Request): Promise<Response> {
       return NextResponse.json({ error: "Аккаунт не найден." }, { status: 404 });
     }
 
-    const token = signToken(user.id);
+    const sessionId = await createSession(user.id, req);
+    const token = signToken(user.id, sessionId);
     return NextResponse.json({ token, email, nickname: user.nickname, plan: user.plan });
   } catch (err) {
     console.error("verify-email error", err);

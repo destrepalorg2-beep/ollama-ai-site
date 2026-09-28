@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Apple, CreditCard, Download, LogOut, Monitor, Smartphone, Terminal, UserIcon } from "lucide-react";
+import { Apple, CreditCard, Download, LogOut, Monitor, ShieldCheck, Smartphone, Terminal, UserIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,12 +12,8 @@ import { PaymentDialog } from "@/components/ui/payment-dialog";
 import { displayName, initials, isOfflineSession, signOut, useAuth } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
+import { planPrice, formatPrice } from "@/lib/pricing";
 
-/* Monthly price in rubles per plan — the only bit that isn't translated
-   text, so it stays out of content.ts. Everything else (plan name, credits
-   line, OS requirements) is read from CONTENT so it follows the language
-   switcher instead of duplicating a hardcoded Russian copy here. */
-const MONTHLY_RUB: Record<string, number> = { free: 0, pro: 490, ultra: 1490 };
 const BUILD_ICONS = [Monitor, Apple, Terminal];
 const BUILD_FILES = ["AI-Hub-Setup.exe", "AI-Hub.dmg", "AI-Hub.AppImage"];
 
@@ -27,6 +23,110 @@ const Field = ({ label, value }: { label: string; value: string }) => (
     <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-foreground">{value}</div>
   </div>
 );
+
+type SessionRow = {
+  id: string;
+  device: string;
+  ip: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+  isCurrent: boolean;
+};
+
+/** Real data from /api/auth/sessions — one row per device actually signed
+ *  in, not a mock list. Only fetched once this tab is opened. */
+function SessionsPanel({ token, active }: { token: string; active: boolean }) {
+  const { t, lang } = useT();
+  const [sessions, setSessions] = useState<SessionRow[] | null>(null);
+  const [error, setError] = useState(false);
+  const [revoking, setRevoking] = useState<string | null>(null);
+
+  const load = () => {
+    setError(false);
+    fetch("/api/auth/sessions", { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d) => setSessions(d.sessions))
+      .catch(() => setError(true));
+  };
+
+  useEffect(() => {
+    if (active && sessions === null && !error) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  const revoke = async (id: string) => {
+    setRevoking(id);
+    try {
+      const res = await fetch("/api/auth/sessions/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        const wasCurrent = (await res.json().catch(() => ({})))?.wasCurrent;
+        setSessions((prev) => prev?.filter((s) => s.id !== id) ?? null);
+        if (wasCurrent) {
+          signOut();
+          window.location.href = "/";
+        }
+      }
+    } finally {
+      setRevoking(null);
+    }
+  };
+
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleString(lang === "ru" ? "ru-RU" : lang === "uk" ? "uk-UA" : lang === "pl" ? "pl-PL" : "en-US", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <p className="text-sm font-semibold text-foreground">{t("profile.sessions.title")}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t("profile.sessions.desc")}</p>
+      </div>
+      <Separator />
+      {sessions === null && !error && <p className="text-sm text-muted-foreground">{t("profile.sessions.loading")}</p>}
+      {error && <p className="text-sm text-destructive">{t("profile.sessions.error")}</p>}
+      {sessions !== null && sessions.length === 0 && (
+        <p className="text-sm text-muted-foreground">{t("profile.sessions.empty")}</p>
+      )}
+      <div className="flex flex-col gap-2">
+        {sessions?.map((s) => (
+          <div key={s.id} className="flex items-center justify-between gap-3 rounded-md border border-input px-3 py-2.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <span className="truncate">{s.device}</span>
+                {s.isCurrent && (
+                  <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-500">
+                    {t("profile.sessions.current")}
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {t("profile.sessions.lastSeen")}: {fmt(s.lastSeenAt)}
+                {s.ip ? ` · ${s.ip}` : ""}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="shrink-0 text-destructive hover:text-destructive"
+              disabled={revoking === s.id}
+              onClick={() => revoke(s.id)}
+            >
+              {t("profile.sessions.revoke")}
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -71,14 +171,17 @@ export default function ProfilePage() {
   const name = displayName(account);
   const perMonth = CONTENT[lang].landing.perMonth;
   const PLANS: Record<string, { name: string; price: string; credits: string }> = Object.fromEntries(
-    CONTENT[lang].plans.map((p) => [
-      p.id,
-      {
-        name: p.name,
-        price: MONTHLY_RUB[p.id] === 0 ? "0 ₽" : `${MONTHLY_RUB[p.id].toLocaleString("ru-RU")} ₽ ${perMonth}`,
-        credits: p.feats[0],
-      },
-    ]),
+    CONTENT[lang].plans.map((p) => {
+      const price = planPrice(lang, p.id);
+      return [
+        p.id,
+        {
+          name: p.name,
+          price: price.monthly === 0 ? formatPrice(lang, 0) : `${formatPrice(lang, price.monthly)} ${perMonth}`,
+          credits: p.feats[0],
+        },
+      ];
+    }),
   );
   const BUILDS = CONTENT[lang].download.builds.map((b, i) => ({
     icon: BUILD_ICONS[i],
@@ -130,6 +233,9 @@ export default function ProfilePage() {
             </TabsTab>
             <TabsTab value="download" className="justify-start">
               <Download className="size-4" /> {t("profile.tab.download")}
+            </TabsTab>
+            <TabsTab value="sessions" className="justify-start">
+              <ShieldCheck className="size-4" /> {t("profile.tab.sessions")}
             </TabsTab>
           </TabsList>
 
@@ -264,6 +370,10 @@ export default function ProfilePage() {
 
               <p className="text-xs leading-relaxed text-muted-foreground">{t("profile.dlNote")}</p>
             </div>
+          </TabsPanel>
+
+          <TabsPanel value="sessions">
+            <SessionsPanel token={account.token} active={tab === "sessions"} />
           </TabsPanel>
 
         </Tabs>

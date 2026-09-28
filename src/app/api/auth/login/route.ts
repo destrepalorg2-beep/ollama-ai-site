@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sql, ensureSchema } from "@/lib/server/db";
 import { signToken } from "@/lib/server/jwt";
+import { createSession } from "@/lib/server/sessions";
 import { clientIp, isRateLimited } from "@/lib/server/rate-limit";
 
 export async function POST(req: Request): Promise<Response> {
@@ -61,7 +62,8 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    const token = signToken(user.id);
+    const sessionId = await createSession(user.id, req);
+    const token = signToken(user.id, sessionId);
     return NextResponse.json({ token, email, nickname: user.nickname, plan: user.plan });
   } catch (err) {
     console.error("login error", err);

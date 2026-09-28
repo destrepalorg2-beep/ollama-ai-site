@@ -8,19 +8,14 @@ import { SiteNav } from "@/components/ui/site-nav";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
-
-/** Prices are the same numbers in every language; only the wording differs. */
-const PRICE: Record<string, { monthly: number; yearly: number; popular?: boolean }> = {
-  free: { monthly: 0, yearly: 0 },
-  pro: { monthly: 490, yearly: 4900, popular: true },
-  ultra: { monthly: 1490, yearly: 14900 },
-};
+import { useAuth } from "@/lib/auth";
+import { planPrice, formatPrice } from "@/lib/pricing";
 
 export default function PricingPage() {
   const { lang } = useT();
+  const { account } = useAuth();
   const c = CONTENT[lang];
   const [yearly, setYearly] = useState(false);
-  const rub = (n: number) => n.toLocaleString(lang === "ru" ? "ru-RU" : lang) + " ₽";
 
   return (
     <div className="min-h-screen bg-black">
@@ -42,20 +37,32 @@ export default function PricingPage() {
 
         <div className="grid gap-5 md:grid-cols-3">
           {c.plans.map((pl) => {
-            const p = PRICE[pl.id];
-            const perMonth = p.monthly === 0 ? 0 : yearly ? Math.round(p.yearly / 12) : p.monthly;
+            const p = planPrice(lang, pl.id);
+            const popular = pl.id === "pro";
+            const perMonth = p.monthly === 0 ? 0 : yearly ? Math.round((p.yearly / 12) * 100) / 100 : p.monthly;
             const billed =
               p.monthly === 0
                 ? c.landing.freeForever
                 : yearly
-                  ? `${c.landing.billedYearly} · ${rub(p.yearly)}`
+                  ? `${c.landing.billedYearly} · ${formatPrice(lang, p.yearly)}`
                   : c.landing.billedMonthly;
+            // Signed in already: go straight to the payment dialog instead
+            // of the registration form (which would just reject the
+            // already-used email and bounce to a "log in" prompt).
+            const href =
+              p.monthly === 0
+                ? account
+                  ? "/profile"
+                  : "/register"
+                : account
+                  ? `/profile?upgrade=${pl.id}`
+                  : `/register?plan=${pl.id}`;
             return (
               <div
                 key={pl.id}
-                className={`relative flex flex-col rounded-3xl border p-6 ${p.popular ? "border-white/25 bg-white/[0.03]" : "border-white/10"}`}
+                className={`relative flex flex-col rounded-3xl border p-6 ${popular ? "border-white/25 bg-white/[0.03]" : "border-white/10"}`}
               >
-                {p.popular && (
+                {popular && (
                   <span className="absolute right-5 top-5 rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white">
                     {c.landing.popular}
                   </span>
@@ -63,7 +70,7 @@ export default function PricingPage() {
                 <div className="text-lg font-semibold text-white">{pl.name}</div>
                 <div className="mt-1 text-sm text-white/50">{pl.info}</div>
                 <div className="mt-5 flex items-end gap-1">
-                  <span className="text-4xl font-bold tracking-tight text-white">{p.monthly === 0 ? "0 ₽" : rub(perMonth)}</span>
+                  <span className="text-4xl font-bold tracking-tight text-white">{formatPrice(lang, perMonth)}</span>
                   {p.monthly !== 0 && <span className="pb-1 text-sm text-white/50">{c.landing.perMonth}</span>}
                 </div>
                 <div className="mt-1 text-xs text-white/50">{billed}</div>
@@ -75,8 +82,8 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <Link
-                  href={p.monthly === 0 ? "/register" : `/register?plan=${pl.id}`}
-                  className={buttonVariants({ variant: p.popular ? "default" : "outline", size: "full", className: "mt-7" })}
+                  href={href}
+                  className={buttonVariants({ variant: popular ? "default" : "outline", size: "full", className: "mt-7" })}
                 >
                   {p.monthly === 0 ? c.landing.startFree : `${c.landing.choose} ${pl.name}`}
                 </Link>

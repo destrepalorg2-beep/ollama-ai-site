@@ -8,7 +8,7 @@ echo ======================================== > deploy-log.txt
 echo   Committing and pushing changes >> deploy-log.txt
 echo ======================================== >> deploy-log.txt
 git add -A >> deploy-log.txt 2>&1
-git commit -m "Add Microsoft sign-in; surface verification-email send failures instead of silence" >> deploy-log.txt 2>&1
+git commit -m "Real active-sessions tracking, fix upgrade-plan login prompt, new plan prices + per-language currency, drop fictional QR-access copy" >> deploy-log.txt 2>&1
 echo commit exit code: %errorlevel% >> deploy-log.txt
 git push >> deploy-log.txt 2>&1
 echo push exit code: %errorlevel% >> deploy-log.txt

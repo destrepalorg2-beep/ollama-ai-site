@@ -148,7 +148,7 @@ const ru: Content = {
       },
       {
         tag: "Всё под контролем",
-        text: "Пользователи, подписки, логи и QR-доступ — в одном месте. Пароли хранятся хешем, доступ по ролям, а данные не покидают ваш сервер.",
+        text: "Пользователи, подписки и логи — в одном месте. Пароли хранятся хешем, доступ по ролям, а данные не покидают ваш сервер.",
       },
     ],
     modelsTitle: "Модели",
@@ -164,7 +164,7 @@ const ru: Content = {
       {
         tag: "Управление",
         title: "Приложение и клиенты",
-        desc: "Десктоп-приложение, веб-клиент и телефон: пользователи, подписки, логи и QR-доступ в одном месте.",
+        desc: "Десктоп-приложение, веб-клиент и телефон: пользователи, подписки и логи в одном месте.",
       },
     ],
     pricingTag: "Тарифы",
@@ -198,7 +198,7 @@ const ru: Content = {
       { q: "Чем отличаются тарифы?", a: "Количеством кредитов в месяц, скоростью и приоритетом в очереди. Сам сервер во всех тарифах ваш и работает одинаково." },
       { q: "Можно ли пользоваться бесплатно?", a: "Да, тариф Free бессрочный: 1 000 кредитов в месяц и основные функции. Карту привязывать не нужно." },
       { q: "Сколько устройств можно подключить?", a: "Сколько угодно. Десктоп-приложение, веб-клиент и телефон работают с одним сервером и одной базой — подписка привязана к аккаунту, а не к устройству." },
-      { q: "Как подключить телефон?", a: "В приложении есть раздел «QR-доступ»: он выпускает временный код на 10 минут. Наводите камеру — и всё открывается на телефоне." },
+      { q: "Как подключить телефон?", a: "Отдельного мобильного приложения пока нет — откройте сайт в браузере телефона и войдите тем же аккаунтом: подписка и данные общие с десктоп-приложением." },
       { q: "Что будет, если я отменю подписку?", a: "Сервер продолжит работать — он ваш. Вы вернётесь на тариф Free с его лимитом кредитов, данные останутся на месте." },
     ],
     ask: "Задать свой вопрос",
@@ -211,7 +211,7 @@ const ru: Content = {
       { title: "Поставьте Ollama", body: "Скачайте с ollama.com. После установки слушает localhost:11434." },
       { title: "Загрузите модель", body: "Нужно 16 ГБ памяти. Если 8 ГБ — берите phi3.", cmd: "ollama pull llama3" },
       { title: "Запустите сервер", body: "Поднимется на localhost:3000. Первый запуск дольше.", cmd: "npm install\nnpm run dev" },
-      { title: "Подключите клиенты", body: "Веб-клиент уже работает. Телефон — по QR-коду, ставить нечего.", cmd: "cd desktop-app && npm install && npm start" },
+      { title: "Подключите клиенты", body: "Веб-клиент уже работает — открывается с телефона прямо в браузере, ставить отдельно нечего.", cmd: "cd desktop-app && npm install && npm start" },
     ],
     fixesTitle: "Если не завелось",
     fixes: [
@@ -256,7 +256,7 @@ const ru: Content = {
     downloadCta: "Скачать",
     phone: "Телефон",
     phoneText:
-      "Отдельное приложение ставить не нужно. Откройте раздел «QR-доступ», нажмите «Создать QR» и наведите камеру — всё откроется в браузере телефона на 10 минут.",
+      "Отдельное приложение ставить не нужно — откройте сайт в браузере телефона и войдите тем же аккаунтом.",
     notReady: "Windows, macOS и Linux — все сборки уже доступны для скачивания.",
     howInstall: "Как установить",
     docs: "Документация",
@@ -350,7 +350,7 @@ const en: Content = {
       },
       {
         tag: "All in one place",
-        text: "Users, subscriptions, logs and QR access in one place. Passwords are hashed, access is role-based, and the data stays on your server.",
+        text: "Users, subscriptions and logs in one place. Passwords are hashed, access is role-based, and the data stays on your server.",
       },
     ],
     modelsTitle: "Models",
@@ -366,7 +366,7 @@ const en: Content = {
       {
         tag: "Management",
         title: "App and clients",
-        desc: "Desktop app, web client and phone: users, subscriptions, logs and QR access in one place.",
+        desc: "Desktop app, web client and phone: users, subscriptions and logs in one place.",
       },
     ],
     pricingTag: "Pricing",
@@ -400,7 +400,7 @@ const en: Content = {
       { q: "How do the plans differ?", a: "By monthly credits, speed and queue priority. The server itself is yours on every plan and behaves identically." },
       { q: "Can I use it for free?", a: "Yes — Free has no time limit: 1,000 credits a month and the core features. No card required." },
       { q: "How many devices can I connect?", a: "As many as you like. Desktop app, web client and phone share one server and one database — the subscription belongs to the account, not the device." },
-      { q: "How do I connect my phone?", a: "The app has a QR access section: it issues a temporary 10-minute code. Point your camera at it and everything opens on the phone." },
+      { q: "How do I connect my phone?", a: "There is no separate mobile app yet — open the site in the phone browser and sign in with the same account; your subscription and data are shared with the desktop app." },
       { q: "What happens if I cancel?", a: "The server keeps running — it's yours. You drop back to the Free credit limit and your data stays where it is." },
     ],
     ask: "Ask your own question",
@@ -413,7 +413,7 @@ const en: Content = {
       { title: "Install Ollama", body: "Download it from ollama.com. Once installed it listens on localhost:11434." },
       { title: "Pull a model", body: "Needs 16 GB of RAM. On 8 GB, use phi3 instead.", cmd: "ollama pull llama3" },
       { title: "Start the server", body: "Comes up on localhost:3000. The first run takes longer.", cmd: "npm install\nnpm run dev" },
-      { title: "Connect the clients", body: "The web client already works. For the phone, scan the QR code — nothing to install.", cmd: "cd desktop-app && npm install && npm start" },
+      { title: "Connect the clients", body: "The web client already works — it opens straight in the phone browser, nothing extra to install.", cmd: "cd desktop-app && npm install && npm start" },
     ],
     fixesTitle: "If it won't start",
     fixes: [
@@ -458,7 +458,7 @@ const en: Content = {
     downloadCta: "Download",
     phone: "Phone",
     phoneText:
-      "Nothing to install. Open the QR access section, press Create QR and point your camera — everything opens in the phone's browser for 10 minutes.",
+      "Nothing to install — open the site in the phone browser and sign in with the same account.",
     notReady: "Windows, macOS and Linux — all builds are available to download now.",
     howInstall: "How to install",
     docs: "Docs",
@@ -552,7 +552,7 @@ const uk: Content = {
       },
       {
         tag: "Усе під контролем",
-        text: "Користувачі, підписки, логи та QR-доступ — в одному місці. Паролі зберігаються хешем, доступ за ролями, а дані не покидають ваш сервер.",
+        text: "Користувачі, підписки та логи — в одному місці. Паролі зберігаються хешем, доступ за ролями, а дані не покидають ваш сервер.",
       },
     ],
     modelsTitle: "Моделі",
@@ -568,7 +568,7 @@ const uk: Content = {
       {
         tag: "Керування",
         title: "Застосунок і клієнти",
-        desc: "Десктоп-застосунок, вебклієнт і телефон: користувачі, підписки, логи та QR-доступ в одному місці.",
+        desc: "Десктоп-застосунок, вебклієнт і телефон: користувачі, підписки та логи в одному місці.",
       },
     ],
     pricingTag: "Тарифи",
@@ -602,7 +602,7 @@ const uk: Content = {
       { q: "Чим відрізняються тарифи?", a: "Кількістю кредитів на місяць, швидкістю та пріоритетом у черзі. Сам сервер на всіх тарифах ваш і працює однаково." },
       { q: "Чи можна користуватися безкоштовно?", a: "Так, тариф Free безстроковий: 1 000 кредитів на місяць і основні функції. Картку прив'язувати не потрібно." },
       { q: "Скільки пристроїв можна підключити?", a: "Скільки завгодно. Десктоп-застосунок, вебклієнт і телефон працюють з одним сервером і однією базою — підписка прив'язана до акаунта, а не до пристрою." },
-      { q: "Як підключити телефон?", a: "У застосунку є розділ «QR-доступ»: він видає тимчасовий код на 10 хвилин. Наводьте камеру — і все відкривається на телефоні." },
+      { q: "Як підключити телефон?", a: "Окремого мобільного застосунку поки немає — відкрийте сайт у браузері телефона й увійдіть тим самим акаунтом: підписка й дані спільні з десктоп-застосунком." },
       { q: "Що буде, якщо я скасую підписку?", a: "Сервер працюватиме далі — він ваш. Ви повернетесь на тариф Free з його лімітом кредитів, дані залишаться на місці." },
     ],
     ask: "Поставити своє запитання",
@@ -615,7 +615,7 @@ const uk: Content = {
       { title: "Встановіть Ollama", body: "Завантажте з ollama.com. Після встановлення слухає localhost:11434." },
       { title: "Завантажте модель", body: "Потрібно 16 ГБ пам'яті. Якщо 8 ГБ — беріть phi3.", cmd: "ollama pull llama3" },
       { title: "Запустіть сервер", body: "Підніметься на localhost:3000. Перший запуск довший.", cmd: "npm install\nnpm run dev" },
-      { title: "Підключіть клієнти", body: "Вебклієнт уже працює. Телефон — за QR-кодом, встановлювати нічого.", cmd: "cd desktop-app && npm install && npm start" },
+      { title: "Підключіть клієнти", body: "Вебклієнт уже працює — відкривається з телефона просто в браузері, встановлювати окремо нічого.", cmd: "cd desktop-app && npm install && npm start" },
     ],
     fixesTitle: "Якщо не запустилось",
     fixes: [
@@ -660,7 +660,7 @@ const uk: Content = {
     downloadCta: "Завантажити",
     phone: "Телефон",
     phoneText:
-      "Окремий застосунок встановлювати не потрібно. Відкрийте розділ «QR-доступ», натисніть «Створити QR» і наведіть камеру — усе відкриється в браузері телефона на 10 хвилин.",
+      "Окремий застосунок встановлювати не потрібно — відкрийте сайт у браузері телефона й увійдіть тим самим акаунтом.",
     notReady: "Windows, macOS і Linux — усі збірки вже доступні для завантаження.",
     howInstall: "Як встановити",
     docs: "Документація",
@@ -754,7 +754,7 @@ const pl: Content = {
       },
       {
         tag: "Wszystko w jednym miejscu",
-        text: "Użytkownicy, subskrypcje, logi i dostęp QR w jednym miejscu. Hasła w postaci skrótów, dostęp według ról, dane zostają na Twoim serwerze.",
+        text: "Użytkownicy, subskrypcje i logi w jednym miejscu. Hasła w postaci skrótów, dostęp według ról, dane zostają na Twoim serwerze.",
       },
     ],
     modelsTitle: "Modele",
@@ -770,7 +770,7 @@ const pl: Content = {
       {
         tag: "Zarządzanie",
         title: "Aplikacja i klienci",
-        desc: "Aplikacja desktopowa, klient webowy i telefon: użytkownicy, subskrypcje, logi i dostęp QR w jednym miejscu.",
+        desc: "Aplikacja desktopowa, klient webowy i telefon: użytkownicy, subskrypcje i logi w jednym miejscu.",
       },
     ],
     pricingTag: "Cennik",
@@ -804,7 +804,7 @@ const pl: Content = {
       { q: "Czym różnią się taryfy?", a: "Liczbą kredytów miesięcznie, szybkością i priorytetem w kolejce. Sam serwer w każdej taryfie jest Twój i działa tak samo." },
       { q: "Czy można korzystać za darmo?", a: "Tak, Free jest bezterminowy: 1 000 kredytów miesięcznie i podstawowe funkcje. Karta niepotrzebna." },
       { q: "Ile urządzeń mogę podłączyć?", a: "Dowolnie wiele. Aplikacja desktopowa, klient webowy i telefon korzystają z jednego serwera i jednej bazy — subskrypcja jest przypisana do konta, nie do urządzenia." },
-      { q: "Jak podłączyć telefon?", a: "W aplikacji jest sekcja „dostęp QR”: wydaje tymczasowy kod na 10 minut. Skieruj aparat — wszystko otworzy się na telefonie." },
+      { q: "Jak podłączyć telefon?", a: "Osobnej aplikacji mobilnej jeszcze nie ma — otwórz stronę w przeglądarce telefonu i zaloguj się tym samym kontem; subskrypcja i dane są wspólne z aplikacją desktopową." },
       { q: "Co się stanie, gdy anuluję?", a: "Serwer działa dalej — jest Twój. Wracasz na limit kredytów Free, a dane zostają na miejscu." },
     ],
     ask: "Zadaj własne pytanie",
@@ -817,7 +817,7 @@ const pl: Content = {
       { title: "Zainstaluj Ollama", body: "Pobierz z ollama.com. Po instalacji nasłuchuje na localhost:11434." },
       { title: "Pobierz model", body: "Potrzeba 16 GB RAM. Przy 8 GB weź phi3.", cmd: "ollama pull llama3" },
       { title: "Uruchom serwer", body: "Wstanie na localhost:3000. Pierwsze uruchomienie trwa dłużej.", cmd: "npm install\nnpm run dev" },
-      { title: "Podłącz klientów", body: "Klient webowy już działa. Telefon — przez kod QR, nic nie instalujesz.", cmd: "cd desktop-app && npm install && npm start" },
+      { title: "Podłącz klientów", body: "Klient webowy już działa — otwiera się na telefonie prosto w przeglądarce, nic dodatkowo nie instalujesz.", cmd: "cd desktop-app && npm install && npm start" },
     ],
     fixesTitle: "Jeśli nie ruszyło",
     fixes: [
@@ -862,7 +862,7 @@ const pl: Content = {
     downloadCta: "Pobierz",
     phone: "Telefon",
     phoneText:
-      "Nic nie instalujesz. Otwórz sekcję dostępu QR, naciśnij „Utwórz QR” i skieruj aparat — wszystko otworzy się w przeglądarce telefonu na 10 minut.",
+      "Nic nie instalujesz — otwórz stronę w przeglądarce telefonu i zaloguj się tym samym kontem.",
     notReady: "Windows, macOS i Linux — wszystkie wersje są już dostępne do pobrania.",
     howInstall: "Jak zainstalować",
     docs: "Dokumentacja",

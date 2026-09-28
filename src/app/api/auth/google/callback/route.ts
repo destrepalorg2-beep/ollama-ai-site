@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { sql, ensureSchema } from "@/lib/server/db";
 import { signToken } from "@/lib/server/jwt";
+import { createSession } from "@/lib/server/sessions";
 
 /**
  * Google sends the browser back here with ?code=&state=. No extra OAuth
@@ -110,7 +111,8 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     if (!user) return fail("google_failed");
 
-    const token = signToken(user.id);
+    const sessionId = await createSession(user.id, req);
+    const token = signToken(user.id, sessionId);
     const dest = new URL("/auth/callback", origin);
     dest.hash = new URLSearchParams({
       token,
