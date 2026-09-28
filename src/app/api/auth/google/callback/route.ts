@@ -95,7 +95,7 @@ export async function GET(req: NextRequest): Promise<Response> {
         WHERE email = ${email}
         RETURNING id, email, nickname, plan
       `;
-      user = result.rows[0] as typeof user;
+      user = result.rows[0] as { id: string; email: string; nickname: string; plan: string } | undefined;
     }
 
     if (!user) {
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest): Promise<Response> {
         VALUES (${randomUUID()}, ${email}, NULL, ${nickname}, 'free', ${info.picture ?? null}, true, ${info.sub})
         RETURNING id, email, nickname, plan
       `;
-      user = result.rows[0] as typeof user;
+      user = result.rows[0] as { id: string; email: string; nickname: string; plan: string } | undefined;
     }
 
     if (!user) return fail("google_failed");
