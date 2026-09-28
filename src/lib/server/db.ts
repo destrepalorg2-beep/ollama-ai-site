@@ -34,6 +34,17 @@ export function ensureSchema(): Promise<void> {
       // guarded ALTER so this stays a no-op once the column is there.
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false`;
 
+      // Telegram Login Widget / Google OAuth accounts don't always come with
+      // a password (Telegram never gives one) or, for Telegram, even a real
+      // email (synthesized instead — see /api/auth/telegram) — so the old
+      // NOT NULL on password_hash has to go. Re-running this on an already-
+      // nullable column is a harmless no-op.
+      await sql`ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`;
+      // UNIQUE here doubles as the ON CONFLICT target each provider's login
+      // route upserts against.
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id BIGINT UNIQUE`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE`;
+
       await sql`
         CREATE TABLE IF NOT EXISTS email_verifications (
           email TEXT PRIMARY KEY,

@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { AuthForm, type Provider } from "@/components/ui/auth-form";
+import type { TelegramAuthUser } from "@/components/ui/telegram-login-button";
+import { BOT_USERNAME } from "@/lib/telegram";
 import { API_BASE, DEV_MODE, completeSignIn, setPending, signInOffline } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
+
+const GOOGLE_ERRORS: Record<string, string> = {
+  google_not_configured: "Вход через Google пока не настроен на сервере.",
+  google_state: "Не удалось подтвердить запрос к Google — попробуйте ещё раз.",
+  google_failed: "Не удалось войти через Google.",
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +23,16 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [noAccountEmail, setNoAccountEmail] = useState<string | null>(null);
+
+  // Google bounced back here with ?error=... after /api/auth/google/callback
+  // failed server-side (success instead lands on /auth/callback with a token).
+  useEffect(() => {
+    try {
+      const code = new URLSearchParams(window.location.search).get("error");
+      if (code) setError(GOOGLE_ERRORS[code] || t("auth.errorGeneric"));
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount.
+  }, []);
 
   const submit = async ({ email, password }: { email: string; password: string }) => {
     setError(null);
@@ -71,8 +89,36 @@ export default function LoginPage() {
   };
 
   const social = (p: Provider) => {
+    if (p === "google") {
+      window.location.href = "/api/auth/google/start";
+      return;
+    }
     setError(null);
     setNotice(t("auth.socialNotConnected").replace("{provider}", p === "sso" ? "SSO" : p));
+  };
+
+  const telegramAuth = async (tgUser: TelegramAuthUser) => {
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/telegram`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tgUser),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.token) {
+        completeSignIn(data.token, { email: data.email, nickname: data.nickname, plan: data.plan });
+        router.push("/profile");
+        return;
+      }
+      setError(data.error || t("auth.errorGeneric"));
+    } catch {
+      setError(t("auth.errorServerDown"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const emailLink = () => {
@@ -120,6 +166,8 @@ export default function LoginPage() {
             onSocialSignIn={social}
             onEmailLink={emailLink}
             onForgot={() => setNotice(t("auth.forgotNotice"))}
+            telegramBotUsername={BOT_USERNAME}
+            onTelegramAuth={telegramAuth}
           />
         </div>
       </main>

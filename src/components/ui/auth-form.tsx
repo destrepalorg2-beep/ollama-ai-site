@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
+import { TelegramLoginButton, type TelegramAuthUser } from "@/components/ui/telegram-login-button";
 import { useT } from "@/lib/i18n";
 
 /* Brand marks inlined as SVG so the card matches the desktop app exactly. */
@@ -57,6 +58,10 @@ interface AuthFormProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onSu
   onSocialSignIn?: (provider: Provider) => void;
   onEmailLink?: () => void;
   onForgot?: () => void;
+  /** Bot @username to render the Telegram Login Widget for. Omit to hide it
+   *  entirely (e.g. while TELEGRAM_BOT_TOKEN isn't set on the server yet). */
+  telegramBotUsername?: string;
+  onTelegramAuth?: (user: TelegramAuthUser) => void;
 }
 
 export function AuthForm({
@@ -71,6 +76,8 @@ export function AuthForm({
   onSocialSignIn,
   onEmailLink,
   onForgot,
+  telegramBotUsername,
+  onTelegramAuth,
   ...props
 }: AuthFormProps) {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -125,6 +132,11 @@ export function AuthForm({
                 <span className="ml-1.5">SSO</span>
               </Button>
             </div>
+            {telegramBotUsername && onTelegramAuth && (
+              <div className="flex justify-center pt-1">
+                <TelegramLoginButton botUsername={telegramBotUsername} onAuth={onTelegramAuth} />
+              </div>
+            )}
           </div>
 
           <div className="relative">

@@ -7,6 +7,8 @@ import { User } from "lucide-react";
 
 import { AuthForm, type Provider } from "@/components/ui/auth-form";
 import { Input, Label } from "@/components/ui/input";
+import type { TelegramAuthUser } from "@/components/ui/telegram-login-button";
+import { BOT_USERNAME } from "@/lib/telegram";
 import { API_BASE, DEV_MODE, completeSignIn, setPending, signInOffline } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
@@ -89,8 +91,36 @@ export default function RegisterPage() {
   };
 
   const social = (p: Provider) => {
+    if (p === "google") {
+      window.location.href = "/api/auth/google/start";
+      return;
+    }
     setError(null);
     setNotice(t("auth.socialRegisterNotConnected").replace("{provider}", p === "sso" ? "SSO" : p));
+  };
+
+  const telegramAuth = async (tgUser: TelegramAuthUser) => {
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/telegram`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tgUser),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.token) {
+        completeSignIn(data.token, { email: data.email, nickname: data.nickname, plan: data.plan });
+        router.push("/profile");
+        return;
+      }
+      setError(data.error || t("auth.errorRegisterGeneric"));
+    } catch {
+      setError(t("auth.errorServerDown"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -124,6 +154,8 @@ export default function RegisterPage() {
           onEmailSubmit={submit}
           onSocialSignIn={social}
           onEmailLink={() => setNotice(t("auth.emailLinkNoticeRegister"))}
+          telegramBotUsername={BOT_USERNAME}
+          onTelegramAuth={telegramAuth}
           extraTop={
             <div className="space-y-2">
               <Label htmlFor="nickname">{t("auth.nickname")}</Label>
