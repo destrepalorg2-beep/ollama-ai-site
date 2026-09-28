@@ -8,7 +8,7 @@ echo ======================================== > deploy-log.txt
 echo   Committing and pushing changes >> deploy-log.txt
 echo ======================================== >> deploy-log.txt
 git add -A >> deploy-log.txt 2>&1
-git commit -m "Add Telegram Login Widget and Google OAuth sign-in" >> deploy-log.txt 2>&1
+git commit -m "Restyle verification email to match site/app dark theme" >> deploy-log.txt 2>&1
 echo commit exit code: %errorlevel% >> deploy-log.txt
 git push >> deploy-log.txt 2>&1
 echo push exit code: %errorlevel% >> deploy-log.txt
