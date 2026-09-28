@@ -9,7 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator, Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/vertical-tabs";
 import { PaymentDialog } from "@/components/ui/payment-dialog";
-import { displayName, initials, isOfflineSession, signOut, useAuth } from "@/lib/auth";
+import { completeSignIn, displayName, initials, isOfflineSession, signOut, useAuth } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import { CONTENT } from "@/lib/content";
 import { planPrice, formatPrice } from "@/lib/pricing";
@@ -45,7 +45,14 @@ function SessionsPanel({ token, active }: { token: string; active: boolean }) {
     setError(false);
     fetch("/api/auth/sessions", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d) => setSessions(d.sessions))
+      .then((d) => {
+        setSessions(d.sessions);
+        // First visit on an older token (issued before session-tracking
+        // existed): the API minted a session for it and handed back a new
+        // token that carries it — swap it in silently so this device shows
+        // up from now on instead of "no active sessions" forever.
+        if (d.refreshedToken) completeSignIn(d.refreshedToken);
+      })
       .catch(() => setError(true));
   };
 

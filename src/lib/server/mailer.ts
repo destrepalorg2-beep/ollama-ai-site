@@ -54,9 +54,25 @@ function buildVerificationEmailHtml(code: string): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
 <title>Код подтверждения — AI HUB</title>
+<!--
+  Without these two meta tags, Gmail's mobile app decides on its own
+  whether an email "supports" dark mode and, when it guesses wrong, force-
+  inverts colors it doesn't recognize as intentionally dark — which is
+  exactly why this card was showing up washed-out light-grey instead of the
+  actual #050506/#0b0b0d design. Declaring color-scheme explicitly stops
+  Gmail (and Apple Mail, Outlook) from "fixing" colors that were already
+  chosen on purpose. style="color-scheme: dark" on <body> below is the CSS-
+  level half of the same fix, for clients that read that instead of the
+  meta tag.
+-->
+<style>
+  :root { color-scheme: dark; supported-color-schemes: dark; }
+</style>
 </head>
-<body style="margin:0;padding:0;background:#050506;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#050506;color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#050506;">
     <tr>
       <td align="center" style="padding:40px 16px;">
