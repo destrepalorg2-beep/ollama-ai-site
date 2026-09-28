@@ -50,6 +50,17 @@ export default function VerifyPage() {
     }
   }, [email, router]);
 
+  // The register call already told us the code email failed to send (SMTP
+  // error) — say so up front instead of leaving the person staring at an
+  // OTP box waiting for mail that was never going to arrive.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (getPending()?.emailFailed) {
+      setMessage({ text: t("verify.mailFailed"), type: "error" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -133,7 +144,9 @@ export default function VerifyPage() {
           text:
             response.status === 429
               ? t("verify.resendTooMany")
-              : data.error || t("verify.resendError"),
+              : data.emailed === false
+                ? t("verify.mailFailed")
+                : data.error || t("verify.resendError"),
           type: "error",
         });
       }

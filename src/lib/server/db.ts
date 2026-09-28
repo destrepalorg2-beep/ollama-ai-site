@@ -44,6 +44,7 @@ export function ensureSchema(): Promise<void> {
       // route upserts against.
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id BIGINT UNIQUE`;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS microsoft_id TEXT UNIQUE`;
 
       await sql`
         CREATE TABLE IF NOT EXISTS email_verifications (

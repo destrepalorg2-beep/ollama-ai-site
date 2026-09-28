@@ -93,6 +93,7 @@ export async function POST(req: Request): Promise<Response> {
       message: emailed
         ? "Мы отправили код подтверждения на почту."
         : "Регистрация создана, но письмо отправить не удалось — обратитесь в поддержку.",
+      emailed,
       email,
       desiredPlan,
     });

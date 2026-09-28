@@ -118,6 +118,7 @@ const ru: Dict = {
   "verify.resendTooMany": "Слишком много попыток. Подождите 10 минут",
   "verify.resendError": "Ошибка отправки",
   "verify.resendConnectionError": "Ошибка соединения",
+  "verify.mailFailed": "Не удалось отправить письмо с кодом на этот адрес. Проверьте папку «Спам» или нажмите «Отправить повторно» через минуту.",
   "verify.noCode": "Не получили код?",
   "verify.resend": "Отправить повторно",
   "verify.resending": "Отправка...",

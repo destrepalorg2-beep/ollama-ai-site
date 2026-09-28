@@ -69,7 +69,13 @@ export default function RegisterPage() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        setPending({ email, nickname: nickname.trim(), plan: plan || "free", userId: data.userId });
+        setPending({
+          email,
+          nickname: nickname.trim(),
+          plan: plan || "free",
+          userId: data.userId,
+          emailFailed: data.emailed === false,
+        });
 
         if (data.token) {
           completeSignIn(data.token, { email, nickname: nickname.trim(), plan: plan || "free" });
@@ -103,6 +109,10 @@ export default function RegisterPage() {
   const social = (p: Provider) => {
     if (p === "google") {
       window.location.href = "/api/auth/google/start";
+      return;
+    }
+    if (p === "microsoft") {
+      window.location.href = "/api/auth/microsoft/start";
       return;
     }
     setError(null);

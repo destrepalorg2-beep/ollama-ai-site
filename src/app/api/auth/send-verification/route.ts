@@ -50,8 +50,14 @@ export async function POST(req: Request): Promise<Response> {
       ON CONFLICT (email) DO UPDATE SET code = ${code}, attempts = 0, expires_at = ${expiresAt}, last_sent_at = now()
     `;
 
-    await sendVerificationEmail(email, code);
-    return NextResponse.json({ ok: true });
+    const emailed = await sendVerificationEmail(email, code);
+    if (!emailed) {
+      return NextResponse.json(
+        { error: "Письмо отправить не удалось — попробуйте ещё раз позже.", emailed: false },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json({ ok: true, emailed: true });
   } catch (err) {
     console.error("send-verification error", err);
     return NextResponse.json({ error: "Не удалось отправить код." }, { status: 500 });

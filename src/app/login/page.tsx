@@ -14,6 +14,9 @@ const GOOGLE_ERRORS: Record<string, string> = {
   google_not_configured: "Вход через Google пока не настроен на сервере.",
   google_state: "Не удалось подтвердить запрос к Google — попробуйте ещё раз.",
   google_failed: "Не удалось войти через Google.",
+  microsoft_not_configured: "Вход через Microsoft пока не настроен на сервере.",
+  microsoft_state: "Не удалось подтвердить запрос к Microsoft — попробуйте ещё раз.",
+  microsoft_failed: "Не удалось войти через Microsoft.",
 };
 
 export default function LoginPage() {
@@ -97,6 +100,10 @@ export default function LoginPage() {
   const social = (p: Provider) => {
     if (p === "google") {
       window.location.href = "/api/auth/google/start";
+      return;
+    }
+    if (p === "microsoft") {
+      window.location.href = "/api/auth/microsoft/start";
       return;
     }
     setError(null);

@@ -32,6 +32,10 @@ export type Pending = {
   nickname?: string;
   plan?: string;
   userId?: string;
+  /** True when the register API confirmed the verification email did NOT go
+   * out (SMTP failure) — the verify page shows a real warning instead of
+   * silently waiting for a code that will never arrive. */
+  emailFailed?: boolean;
 };
 
 export type DB = {
