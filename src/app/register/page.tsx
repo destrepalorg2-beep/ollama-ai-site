@@ -37,6 +37,7 @@ export default function RegisterPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [takenEmail, setTakenEmail] = useState<string | null>(null);
 
   // Read ?plan= from the URL directly: useSearchParams would need a Suspense
   // boundary around this page and fails the build without one.
@@ -53,6 +54,7 @@ export default function RegisterPage() {
   const submit = async ({ email, password }: { email: string; password: string }) => {
     setError(null);
     setNotice(null);
+    setTakenEmail(null);
     if (nickname.trim().length < 2) {
       setError(t("auth.errorNicknameShort"));
       return;
@@ -77,7 +79,15 @@ export default function RegisterPage() {
         }
         return;
       }
-      setError(res.status === 409 ? t("auth.errorEmailTaken") : data.error || t("auth.errorRegisterGeneric"));
+      if (res.status === 409) {
+        // One email = one account: don't leave the person staring at a
+        // plain error, point them straight at signing into the account
+        // that already exists (mirrors the "account not found" card on
+        // /login).
+        setTakenEmail(email);
+        return;
+      }
+      setError(data.error || t("auth.errorRegisterGeneric"));
     } catch {
       if (DEV_MODE) {
         signInOffline(email, { nickname: nickname.trim(), plan: plan || "free" });
@@ -131,6 +141,19 @@ export default function RegisterPage() {
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
+        {takenEmail && (
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm">
+            <p className="text-white/80">
+              Эта электронная почта уже используется: <span className="font-medium text-white">{takenEmail}</span>. Войдите в существующий аккаунт.
+            </p>
+            <Link
+              href={`/login?email=${encodeURIComponent(takenEmail)}`}
+              className="mt-2 inline-block font-medium text-foreground underline underline-offset-4"
+            >
+              Войти
+            </Link>
+          </div>
+        )}
         {plan && PLANS[plan] && (
           <div className="flex w-full max-w-[380px] items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
             <div className="min-w-0">

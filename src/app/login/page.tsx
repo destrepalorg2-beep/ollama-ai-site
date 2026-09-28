@@ -23,13 +23,19 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [noAccountEmail, setNoAccountEmail] = useState<string | null>(null);
+  const [emailFromLink, setEmailFromLink] = useState<string | undefined>(undefined);
 
   // Google bounced back here with ?error=... after /api/auth/google/callback
   // failed server-side (success instead lands on /auth/callback with a token).
+  // Also picks up ?email=... from the register page's "already used, sign
+  // in instead" link so the person doesn't have to retype it.
   useEffect(() => {
     try {
-      const code = new URLSearchParams(window.location.search).get("error");
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("error");
       if (code) setError(GOOGLE_ERRORS[code] || t("auth.errorGeneric"));
+      const e = params.get("email");
+      if (e) setEmailFromLink(e);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount.
   }, []);
@@ -162,6 +168,7 @@ export default function LoginPage() {
             busy={busy}
             error={error}
             notice={notice}
+            defaultEmail={emailFromLink}
             onEmailSubmit={submit}
             onSocialSignIn={social}
             onEmailLink={emailLink}
