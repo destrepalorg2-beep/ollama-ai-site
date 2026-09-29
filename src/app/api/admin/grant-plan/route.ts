@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql, ensureSchema } from "@/lib/server/db";
 import { userIdFromRequest } from "@/lib/server/jwt";
+import { logAdminAction } from "@/lib/server/audit";
 
 /**
  * Admin-only: sets a real account's plan directly, for the desktop app's
@@ -49,6 +50,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   await sql`UPDATE users SET plan = ${plan} WHERE id = ${target.id}`;
+  await logAdminAction(caller.email, "grant_plan", `${target.email} → ${plan}`);
 
   return NextResponse.json({ ok: true, email: target.email, nickname: target.nickname, plan });
 }

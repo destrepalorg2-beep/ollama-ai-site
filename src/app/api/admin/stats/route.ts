@@ -50,8 +50,10 @@ export async function GET(req: Request): Promise<Response> {
   }));
 
   const now = Date.now();
-  const weekMs = 7 * 24 * 60 * 60 * 1000;
   const dayMs = 24 * 60 * 60 * 1000;
+  const weekMs = 7 * dayMs;
+  const monthMs = 30 * dayMs;
+  const yearMs = 365 * dayMs;
 
   const totals = {
     users: users.length,
@@ -59,6 +61,8 @@ export async function GET(req: Request): Promise<Response> {
     unverified: users.filter((u) => !u.emailVerified).length,
     newLast7d: users.filter((u) => now - new Date(u.createdAt).getTime() < weekMs).length,
     newLast24h: users.filter((u) => now - new Date(u.createdAt).getTime() < dayMs).length,
+    newLast30d: users.filter((u) => now - new Date(u.createdAt).getTime() < monthMs).length,
+    newLastYear: users.filter((u) => now - new Date(u.createdAt).getTime() < yearMs).length,
     byPlan: users.reduce<Record<string, number>>((acc, u) => {
       acc[u.plan] = (acc[u.plan] || 0) + 1;
       return acc;

@@ -134,6 +134,20 @@ export function ensureSchema(): Promise<void> {
           PRIMARY KEY (user_id, device_id)
         )
       `;
+
+      // Read-only audit trail of admin actions (grant/revoke plan, delete
+      // users, etc) for the "who did what" console in the desktop app's
+      // Site statistics panel. Write-only from the app's own admin routes —
+      // there is no edit/delete on this table itself.
+      await sql`
+        CREATE TABLE IF NOT EXISTS admin_audit_log (
+          id TEXT PRIMARY KEY,
+          admin_email TEXT NOT NULL,
+          action TEXT NOT NULL,
+          details TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
     })();
   }
   return schemaReady;
