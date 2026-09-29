@@ -99,3 +99,40 @@ export async function revokeSession(userId: string, sessionId: string): Promise<
   `;
   return r.rows.length > 0;
 }
+
+export type AdminActivityRow = {
+  id: string;
+  email: string;
+  nickname: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+  userAgent: string | null;
+  ip: string | null;
+  revoked: boolean;
+};
+
+/** Admin-only, cross-account view of recent sign-ins — backs the desktop
+ *  app's "Site statistics" panel ("who logged in, when"). Not scoped to a
+ *  single user like listSessions(); the caller is responsible for the
+ *  admin-email gate (see /api/admin/activity). Includes revoked rows too
+ *  (still useful history) but flags them so the UI can grey them out. */
+export async function listAllSessions(limit = 50): Promise<AdminActivityRow[]> {
+  const r = await sql`
+    SELECT s.id, u.email, u.nickname, s.created_at, s.last_seen_at,
+           s.user_agent, s.ip, s.revoked_at IS NOT NULL AS revoked
+    FROM sessions s
+    JOIN users u ON u.id = s.user_id
+    ORDER BY s.last_seen_at DESC
+    LIMIT ${limit}
+  `;
+  return r.rows.map((row) => ({
+    id: row.id as string,
+    email: row.email as string,
+    nickname: row.nickname as string | null,
+    createdAt: row.created_at as string,
+    lastSeenAt: row.last_seen_at as string,
+    userAgent: row.user_agent as string | null,
+    ip: row.ip as string | null,
+    revoked: row.revoked as boolean,
+  }));
+}
