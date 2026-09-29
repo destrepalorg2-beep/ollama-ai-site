@@ -8,7 +8,7 @@ echo ======================================== > deploy-log.txt
 echo   Committing and pushing changes >> deploy-log.txt
 echo ======================================== >> deploy-log.txt
 git add -A >> deploy-log.txt 2>&1
-git commit -m "Add admin-only cross-account activity feed (/api/admin/activity) for desktop app site statistics" >> deploy-log.txt 2>&1
+git commit -m "Add admin-only grant-plan endpoint so the desktop app can grant real subscriptions" >> deploy-log.txt 2>&1
 echo commit exit code: %errorlevel% >> deploy-log.txt
 git push >> deploy-log.txt 2>&1
 echo push exit code: %errorlevel% >> deploy-log.txt
