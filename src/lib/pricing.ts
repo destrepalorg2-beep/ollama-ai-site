@@ -24,29 +24,31 @@ export const CURRENCY: Record<Lang, { code: string; symbol: string; locale: stri
   pl: { code: "PLN", symbol: "zł", locale: "pl-PL" },
 };
 
-/** Monthly / yearly price per plan, per language. Yearly = 10× monthly in
- *  every currency (two months free), matching the "-17%" badge on the
- *  billing toggle. */
+/** Monthly / yearly price per plan, per language. Yearly = 12× monthly in
+ *  every currency — no annual discount (changed 2026-09-29 at the owner's
+ *  request; yearly Pro/Ultra in RUB are now exactly 3480/8280, i.e.
+ *  290×12/690×12). Keep this ×12 relationship when monthly prices change:
+ *  it's what bot/bot.mjs's yearly PLANS entries mirror in Stars. */
 export const PRICES: Record<Lang, Record<PlanId, { monthly: number; yearly: number }>> = {
   ru: {
     free: { monthly: 0, yearly: 0 },
-    pro: { monthly: 290, yearly: 2900 },
-    ultra: { monthly: 690, yearly: 6900 },
+    pro: { monthly: 290, yearly: 3480 },
+    ultra: { monthly: 690, yearly: 8280 },
   },
   en: {
     free: { monthly: 0, yearly: 0 },
-    pro: { monthly: 3.99, yearly: 39.99 },
-    ultra: { monthly: 8.99, yearly: 89.99 },
+    pro: { monthly: 3.99, yearly: 47.88 },
+    ultra: { monthly: 8.99, yearly: 107.88 },
   },
   uk: {
     free: { monthly: 0, yearly: 0 },
-    pro: { monthly: 160, yearly: 1600 },
-    ultra: { monthly: 380, yearly: 3800 },
+    pro: { monthly: 160, yearly: 1920 },
+    ultra: { monthly: 380, yearly: 4560 },
   },
   pl: {
     free: { monthly: 0, yearly: 0 },
-    pro: { monthly: 15, yearly: 150 },
-    ultra: { monthly: 35, yearly: 350 },
+    pro: { monthly: 15, yearly: 180 },
+    ultra: { monthly: 35, yearly: 420 },
   },
 };
 

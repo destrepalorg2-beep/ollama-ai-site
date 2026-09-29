@@ -242,7 +242,7 @@ function Pricing() {
         </motion.div>
         <div className="mx-auto mb-8 flex w-fit items-center gap-1 rounded-full border border-white/15 bg-white/5 p-1 text-sm">
           <Button onClick={() => setYearly(false)} variant={!yearly ? "default" : "ghost"} size="sm" className="rounded-full">{L.monthly}</Button>
-          <Button onClick={() => setYearly(true)} variant={yearly ? "default" : "ghost"} size="sm" className="rounded-full">{L.yearly} <span className="ml-1 text-emerald-400">{L.save}</span></Button>
+          <Button onClick={() => setYearly(true)} variant={yearly ? "default" : "ghost"} size="sm" className="rounded-full">{L.yearly}</Button>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {C.plans.map((tr) => {

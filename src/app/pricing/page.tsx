@@ -31,7 +31,7 @@ export default function PricingPage() {
             {c.landing.monthly}
           </Button>
           <Button onClick={() => setYearly(true)} variant={yearly ? "default" : "ghost"} size="sm" className="rounded-full">
-            {c.landing.yearly} <span className="ml-1 text-emerald-400">{c.landing.save}</span>
+            {c.landing.yearly}
           </Button>
         </div>
 
