@@ -14,6 +14,7 @@ import { dirname, join } from "node:path";
 import { lookup } from "node:dns/promises";
 import { fileURLToPath } from "node:url";
 import { findRoute, post } from "./tg-net.mjs";
+import { BASE_PRICES, yearlyOf } from "../shared/pricing.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LOG = join(HERE, "bot-log.txt");
@@ -148,23 +149,28 @@ const PAY = {
 };
 
 /**
- * Telegram Stars price per plan.
- * ADJUST THESE. Stars are not roubles — check the current rate in @BotFather
- * before taking real money, otherwise you undercharge or overcharge.
+ * Telegram Stars price per plan — now built from shared/pricing.mjs's
+ * BASE_PRICES instead of separate hardcoded numbers, so this can't drift
+ * from what src/lib/pricing.ts shows on the site. To change a price,
+ * edit BASE_PRICES in shared/pricing.mjs (once) — everything below
+ * (monthly, yearly ×12, the RUB label text) follows automatically.
  *
- * Yearly = 12× the monthly Stars amount — no annual discount, mirroring
- * src/lib/pricing.ts on the site (RUB yearly Pro/Ultra = 3480/8280, i.e.
- * 290×12/690×12). Keep these two in sync by hand: change one, change the
- * other the same way. redeem-payment on the site trusts its own stored
+ * ADJUST BASE_PRICES, not this file, when a price actually changes.
+ * Stars are not roubles — check the current rate in @BotFather before
+ * picking a new base Stars number, otherwise you undercharge or
+ * overcharge. redeem-payment on the site trusts its own stored
  * payment_intents.plan, not whatever id is sent here, so "pro_year" /
  * "ultra_year" only need to look right to the buyer — they always grant
  * plain "pro" / "ultra" on the account.
  */
+function rubLabel(rub, period) {
+  return `${rub} ₽ / ${period}`;
+}
 const PLANS = {
-  pro: { title: "Pro", stars: 235, rub: "290 ₽ / мес", desc: "5 000 кредитов в месяц, повышенная скорость, приоритетная очередь." },
-  pro_year: { title: "Pro — год", stars: 235 * 12, rub: "3480 ₽ / год", desc: "То же самое, что Pro, но оплата сразу за 12 месяцев одним платежом." },
-  ultra: { title: "Ultra", stars: 560, rub: "690 ₽ / мес", desc: "15 000 кредитов в месяц, максимальная скорость, высший приоритет." },
-  ultra_year: { title: "Ultra — год", stars: 560 * 12, rub: "8280 ₽ / год", desc: "То же самое, что Ultra, но оплата сразу за 12 месяцев одним платежом." },
+  pro: { title: "Pro", stars: BASE_PRICES.pro.stars, rub: rubLabel(BASE_PRICES.pro.rub, "мес"), desc: "5 000 кредитов в месяц, повышенная скорость, приоритетная очередь." },
+  pro_year: { title: "Pro — год", stars: yearlyOf(BASE_PRICES.pro.stars), rub: rubLabel(yearlyOf(BASE_PRICES.pro.rub), "год"), desc: "То же самое, что Pro, но оплата сразу за 12 месяцев одним платежом." },
+  ultra: { title: "Ultra", stars: BASE_PRICES.ultra.stars, rub: rubLabel(BASE_PRICES.ultra.rub, "мес"), desc: "15 000 кредитов в месяц, максимальная скорость, высший приоритет." },
+  ultra_year: { title: "Ultra — год", stars: yearlyOf(BASE_PRICES.ultra.stars), rub: rubLabel(yearlyOf(BASE_PRICES.ultra.rub), "год"), desc: "То же самое, что Ultra, но оплата сразу за 12 месяцев одним платежом." },
 };
 
 /* ── Telegram API ─────────────────────────────────────────────────────────── */

@@ -12,7 +12,15 @@
  * Rates used for the conversion (2026-09-26, cbr.ru): 1 USD ≈ 84.34 RUB,
  * 1 PLN ≈ 21.96 RUB, 1 UAH ≈ 1.88 RUB. Revisit these numbers occasionally —
  * they're not live.
+ *
+ * The `ru` row below is NOT hardcoded here — it's generated from
+ * shared/pricing.mjs's BASE_PRICES, the same module bot/bot.mjs imports
+ * for its Stars prices. That's the actual single source of truth for the
+ * real RUB charge; change a price there and both the site and the bot
+ * pick it up. The en/uk/pl rows stay hand-curated display estimates (see
+ * above) since they're not real charge amounts.
  */
+import { BASE_PRICES, yearlyOf } from "../../shared/pricing.mjs";
 
 export type PlanId = "free" | "pro" | "ultra";
 export type Lang = "ru" | "en" | "uk" | "pl";
@@ -27,14 +35,17 @@ export const CURRENCY: Record<Lang, { code: string; symbol: string; locale: stri
 /** Monthly / yearly price per plan, per language. Yearly = 12× monthly in
  *  every currency — no annual discount (changed 2026-09-29 at the owner's
  *  request; yearly Pro/Ultra in RUB are now exactly 3480/8280, i.e.
- *  290×12/690×12). Keep this ×12 relationship when monthly prices change:
- *  it's what bot/bot.mjs's yearly PLANS entries mirror in Stars. */
+ *  290×12/690×12). The `ru` row is generated below from
+ *  shared/pricing.mjs (see import above) so it can't drift from what the
+ *  bot actually charges; en/uk/pl stay hand-curated display estimates. */
+const RUB_ROW: Record<PlanId, { monthly: number; yearly: number }> = {
+  free: { monthly: BASE_PRICES.free.rub, yearly: yearlyOf(BASE_PRICES.free.rub) },
+  pro: { monthly: BASE_PRICES.pro.rub, yearly: yearlyOf(BASE_PRICES.pro.rub) },
+  ultra: { monthly: BASE_PRICES.ultra.rub, yearly: yearlyOf(BASE_PRICES.ultra.rub) },
+};
+
 export const PRICES: Record<Lang, Record<PlanId, { monthly: number; yearly: number }>> = {
-  ru: {
-    free: { monthly: 0, yearly: 0 },
-    pro: { monthly: 290, yearly: 3480 },
-    ultra: { monthly: 690, yearly: 8280 },
-  },
+  ru: RUB_ROW,
   en: {
     free: { monthly: 0, yearly: 0 },
     pro: { monthly: 3.99, yearly: 47.88 },
