@@ -115,6 +115,25 @@ export function ensureSchema(): Promise<void> {
           decided_at TIMESTAMPTZ
         )
       `;
+
+      // A device the desktop app has actually "remembered": one row per
+      // (user, device_id) the app has ever checked in with. device_id is
+      // the random UUID the desktop app generates once and persists in
+      // userData/device-id.json, sent as the X-Device-Id header on every
+      // cloudPostApi/cloudGetApi call (see main.js's getDeviceId()). Before
+      // this table, that header was sent but never read by the server —
+      // nothing was actually "remembered". See src/lib/server/devices.ts
+      // and /api/device/touch.
+      await sql`
+        CREATE TABLE IF NOT EXISTS trusted_devices (
+          user_id TEXT NOT NULL,
+          device_id TEXT NOT NULL,
+          user_agent TEXT,
+          first_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_id, device_id)
+        )
+      `;
     })();
   }
   return schemaReady;
