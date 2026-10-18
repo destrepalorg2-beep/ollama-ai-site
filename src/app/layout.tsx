@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { LangProvider } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "AI HUB",
@@ -18,6 +19,7 @@ export default function RootLayout({
           {children}
           <LanguageSwitcher />
         </LangProvider>
+        <Analytics />
       </body>
     </html>
   );
